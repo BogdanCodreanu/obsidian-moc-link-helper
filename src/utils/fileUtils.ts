@@ -4,6 +4,8 @@ export interface FileData extends TFile {
   frontmatter?: FrontMatterCache;
   nameWithoutExtension: string;
   uniqueLinkedName?: string;
+  outLinks?: FileData[];
+  inLinks?: FileData[];
 }
 
 export const expandFile = (file: TFile, app: App, allFiles: Record<string, FileData>): FileData => {
