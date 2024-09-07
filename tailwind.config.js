@@ -37,7 +37,9 @@ module.exports = {
       'interactive-accent-hover': 'var(--color-accent-1)',
       'text-normal': 'var(--text-normal)',
       'bg-col': 'var(--background-primary)',
+      'orange': 'var(--color-orange)',
+      'red': 'var(--color-red)',
+      'green': 'var(--color-green)',
     },
   },
-  plugins: [],
 };

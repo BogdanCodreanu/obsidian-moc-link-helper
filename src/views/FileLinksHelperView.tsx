@@ -1,9 +1,16 @@
 import { StrictMode } from 'react';
-import { ItemView, MarkdownFileInfo, WorkspaceLeaf } from 'obsidian';
+import { ItemView, MarkdownFileInfo, TAbstractFile, WorkspaceLeaf } from 'obsidian';
 import { Root, createRoot } from 'react-dom/client';
 import { SideMenuView } from '../components/SideMenuView';
 import { AppContext } from '../context/AppContext';
-import { expandFile, FileData } from 'src/utils/fileUtils';
+import {
+  expandFile,
+  FileData,
+  fromFilenameToFile,
+  getOutFiles,
+  getUpFiles,
+  secondExpandFile,
+} from 'src/utils/fileUtils';
 import { MyPluginSettings } from 'src/main';
 
 export const FILE_LINKS_HELPER_VIEW_ID = 'file-links-helper-view';
@@ -24,50 +31,121 @@ class FileLinksHelperView extends ItemView {
   }
 
   private initAlFiles() {
-    const files = this.app.vault.getFiles(); //.map((f) => expandFile(f, this.app, {}));
+    const files = this.app.vault.getFiles();
 
     files.forEach((file) => {
-      this.filesByPath[file.path] = expandFile(file, this.app, this.filesByPath);
+      this.filesByPath[file.path] = expandFile(file, this.app);
     });
+
+    Object.values(this.filesByPath).forEach((file) =>
+      secondExpandFile(file, this.app, this.filesByPath),
+    );
+
+    files.forEach((file) => {
+      const outLinks = getOutFiles(file.path, this.app, this.filesByPath);
+
+      this.filesByPath[file.path].outLinks = outLinks;
+
+      outLinks.forEach((outFile) => {
+        this.filesByPath[outFile.path].inLinks.push(this.filesByPath[file.path]);
+      });
+
+      this.filesByPath[file.path].unresolvedLinks = Object.keys(
+        this.app.metadataCache.unresolvedLinks[file.path],
+      );
+    });
+
+    console.log('all files', this.filesByPath);
   }
 
-  private registerEvents() {
-    // on settings change
+  private onCreatedFile = (f: TAbstractFile) => {
+    const file = this.app.vault.getFileByPath(f.path);
+    if (!file) {
+      return;
+    }
+    this.filesByPath[f.path] = expandFile(file, this.app);
+    secondExpandFile(this.filesByPath[f.path], this.app, this.filesByPath);
+  };
 
+  private onDeletedFile = (f: TAbstractFile) => {
+    const deletedFile = this.filesByPath[f.path];
+
+    deletedFile.inLinks.forEach((link) => {
+      link.outLinks = link.outLinks.filter((outlink) => outlink.path !== f.path);
+    });
+    deletedFile.outLinks.forEach((link) => {
+      link.inLinks = link.inLinks.filter((inlink) => inlink.path !== f.path);
+    });
+
+    delete this.filesByPath[f.path];
+  };
+
+  private registerEvents() {
     this.registerEvent(
       this.app.vault.on('create', (f) => {
-        const file = this.app.vault.getFileByPath(f.path);
-        if (!file) {
-          return;
-        }
-        this.filesByPath[f.path] = expandFile(file, this.app, this.filesByPath);
+        this.onCreatedFile(f);
         this.recreateRoot();
       }),
     );
 
     this.registerEvent(
       this.app.vault.on('delete', (f) => {
-        delete this.filesByPath[f.path];
-        console.log('all files after', this.filesByPath);
+        this.onDeletedFile(f);
+        this.recreateRoot();
       }),
     );
 
     this.registerEvent(
       this.app.vault.on('rename', (f, oldPath) => {
-        const file = this.app.vault.getFileByPath(f.path);
-        if (!file) {
-          return;
-        }
-        this.filesByPath[f.path] = expandFile(file, this.app, this.filesByPath);
-        delete this.filesByPath[oldPath];
-
-        console.log('all files after', this.filesByPath);
+        this.onDeletedFile(this.filesByPath[oldPath]);
+        this.onCreatedFile(f);
+        this.recreateRoot();
       }),
     );
 
     this.registerEvent(
       this.app.metadataCache.on('changed', (file, _, cache) => {
-        this.filesByPath[file.path].frontmatter = cache.frontmatter;
+        const transformedFile = this.filesByPath[file.path];
+        transformedFile.frontmatter = cache.frontmatter;
+        transformedFile.tags = cache.tags?.map((t) => t.tag) ?? [];
+
+        const newOutLinks = [...new Set(cache.links?.map((l) => l.link) ?? [])]
+          .map((l) => fromFilenameToFile(l, this.filesByPath))
+          .filter((f) => !!f);
+
+        const oldOutlinks = transformedFile.outLinks;
+        const newOutLinksPaths = newOutLinks.map((f) => f.path);
+        const oldOutLinksPaths = oldOutlinks.map((f) => f.path);
+
+        oldOutlinks.forEach((link) => {
+          const indexOfInLink =
+            link.inLinks.findIndex((inlink) => inlink.path === transformedFile.path) ?? -1;
+          if (indexOfInLink > -1 && newOutLinksPaths.indexOf(link.path) === -1) {
+            link.inLinks = link.inLinks.splice(indexOfInLink, 1);
+          }
+        });
+
+        newOutLinks.forEach((link) => {
+          const indexOfInLink =
+            link.inLinks.findIndex((inlink) => inlink.path === transformedFile.path) ?? -1;
+          if (
+            indexOfInLink === -1 &&
+            oldOutLinksPaths.indexOf(link.path) === -1 &&
+            link.path !== transformedFile.path
+          ) {
+            link.inLinks.push(transformedFile);
+          }
+        });
+
+        this.filesByPath[file.path].outLinks = newOutLinks;
+
+        this.filesByPath[file.path].upFiles = getUpFiles(
+          this.filesByPath[file.path],
+          this.filesByPath,
+        );
+
+        console.log('all files after', this.filesByPath);
+
         this.recreateRoot();
       }),
     );
