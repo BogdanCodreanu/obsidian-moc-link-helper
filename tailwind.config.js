@@ -10,6 +10,30 @@ module.exports = {
         1: '1px',
       },
     },
+    margin: {
+      xs: '.236em',
+      s: '.345em',
+      m: '.786096em',
+      l: '1em',
+      xl: '1.618em',
+      xxl: '2.618em',
+    },
+    padding: {
+      xs: '.236em',
+      s: '.345em',
+      m: '.786096em',
+      l: '1em',
+      xl: '1.618em',
+      xxl: '2.618em',
+    },
+    gap: {
+      xs: '.236em',
+      s: '.345em',
+      m: '.786096em',
+      l: '1em',
+      xl: '1.618em',
+      xxl: '2.618em',
+    },
     colors: {
       base: {
         0: 'var(--color-base-00)',
@@ -40,6 +64,7 @@ module.exports = {
       'orange': 'var(--color-orange)',
       'red': 'var(--color-red)',
       'green': 'var(--color-green)',
+      'pillBackground': 'var(--pill-background)',
     },
   },
 };

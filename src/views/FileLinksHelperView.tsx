@@ -22,23 +22,25 @@ class FileLinksHelperView extends ItemView {
   private activeFile: FileData | null = null;
   private activeEditor: MarkdownFileInfo | null = null;
 
+  private settings: MyPluginSettings;
+
   constructor(leaf: WorkspaceLeaf, settings: MyPluginSettings) {
     super(leaf);
-    this.initAlFiles();
-    this.registerEvents();
+    this.settings = settings;
 
-    console.log('settings', settings);
+    this.initAllFiles();
+    this.registerEvents();
   }
 
-  private initAlFiles() {
+  public initAllFiles() {
     const files = this.app.vault.getFiles();
 
     files.forEach((file) => {
-      this.filesByPath[file.path] = expandFile(file, this.app);
+      this.filesByPath[file.path] = expandFile(file, this.app, this.settings);
     });
 
     Object.values(this.filesByPath).forEach((file) =>
-      secondExpandFile(file, this.app, this.filesByPath),
+      secondExpandFile(file, this.filesByPath, this.settings),
     );
 
     files.forEach((file) => {
@@ -55,7 +57,11 @@ class FileLinksHelperView extends ItemView {
       );
     });
 
+    if (this.app.workspace.activeEditor?.file) {
+      this.activeFile = this.filesByPath[this.app.workspace.activeEditor.file.path];
+    }
     console.log('all files', this.filesByPath);
+    this.recreateRoot();
   }
 
   private onCreatedFile = (f: TAbstractFile) => {
@@ -63,8 +69,8 @@ class FileLinksHelperView extends ItemView {
     if (!file) {
       return;
     }
-    this.filesByPath[f.path] = expandFile(file, this.app);
-    secondExpandFile(this.filesByPath[f.path], this.app, this.filesByPath);
+    this.filesByPath[f.path] = expandFile(file, this.app, this.settings);
+    secondExpandFile(this.filesByPath[f.path], this.filesByPath, this.settings);
   };
 
   private onDeletedFile = (f: TAbstractFile) => {
@@ -142,9 +148,8 @@ class FileLinksHelperView extends ItemView {
         this.filesByPath[file.path].upFiles = getUpFiles(
           this.filesByPath[file.path],
           this.filesByPath,
+          this.settings,
         );
-
-        console.log('all files after', this.filesByPath);
 
         this.recreateRoot();
       }),
@@ -152,11 +157,28 @@ class FileLinksHelperView extends ItemView {
 
     this.registerEvent(
       this.app.workspace.on('active-leaf-change', () => {
-        if (this.app.workspace.activeEditor?.file) {
-          this.activeFile = this.filesByPath[this.app.workspace.activeEditor.file.path];
-          this.activeEditor = this.app.workspace.activeEditor;
-          this.recreateRoot();
+        const isVisible = (this.leaf as any)?.width > 0;
+
+        if (!isVisible) {
+          this.unmountRoot();
+        } else {
+          if (this.app.workspace.activeEditor?.file) {
+            this.activeFile = this.filesByPath[this.app.workspace.activeEditor.file.path];
+            this.activeEditor = this.app.workspace.activeEditor;
+            this.recreateRoot();
+          } else {
+            if (!this.root) {
+              this.recreateRoot();
+            }
+          }
         }
+      }),
+    );
+
+    this.registerEvent(
+      this.app.workspace.on('file-links-helper-view-reinit' as any, () => {
+        this.initAllFiles();
+        this.recreateRoot();
       }),
     );
   }
@@ -169,11 +191,14 @@ class FileLinksHelperView extends ItemView {
     return 'File Links Helper';
   }
 
-  private recreateRoot() {
+  private unmountRoot() {
     if (this.root) {
       this.root.unmount();
       this.root = null;
     }
+  }
+  private recreateRoot() {
+    this.unmountRoot();
 
     this.root = createRoot(this.containerEl.children[1]);
     this.root.render(
@@ -184,6 +209,7 @@ class FileLinksHelperView extends ItemView {
             allFiles: this.filesByPath,
             activeFile: this.activeFile,
             activeEditor: this.activeEditor,
+            settings: this.settings,
           }}
         >
           <SideMenuView />
