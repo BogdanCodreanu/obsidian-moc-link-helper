@@ -19,14 +19,15 @@ interface FileDataWithProps extends FileData {
 }
 
 const FileItem = (props: IFileItemProps) => {
-  const { app, settings } = useApp();
+  const { app, settings, allFiles } = useApp();
   const [upLinks, setUpLinks] = useState<FileDataWithProps[]>([]);
+  const missingLink = !props.displayAsUnadded && upLinks.every((l) => !l.isParentFile);
 
   useEffect(() => {
     setUpLinks(
-      props.file.upFiles.map((file) => ({
-        ...file,
-        isParentFile: props.parentFile.path === file.path,
+      [...props.file.upFiles].map((path) => ({
+        ...allFiles[path],
+        isParentFile: props.parentFile.path === path,
       })),
     );
   }, [props.file, props.parentFile]);
@@ -54,13 +55,15 @@ const FileItem = (props: IFileItemProps) => {
 
   if (props.titleOnly) {
     return (
-      <div className="rounded-lg border-base-60 border-1 bg-base-5 p-s py-xs transition-all">{title}</div>
+      <div className="rounded-lg border-1 border-base-60 bg-base-5 p-s py-xs transition-all">
+        {title}
+      </div>
     );
   }
 
   return (
     <div
-      className={`flex flex-col flex-wrap rounded-lg border-base-60 bg-base-5 p-s py-xs transition-all ${props.isDisabled ? 'scale-y-70 scale-90' : ''} ${props.isSelected ? 'rounded-2xl border-2 border-text-accent' : 'border-1'} ${props.displayAsUnadded ? 'border-orange' : ''}`}
+      className={`flex flex-col flex-wrap rounded-lg border-base-60 bg-base-5 p-s py-xs transition-all ${props.isDisabled ? 'scale-y-70 scale-90' : ''} ${props.isSelected ? 'rounded-2xl border-2 border-text-accent' : 'border-1'} ${props.displayAsUnadded || missingLink ? 'border-orange border-2' : ''}`}
     >
       <div className="flex flex-row items-center justify-between">
         {title}
@@ -76,9 +79,7 @@ const FileItem = (props: IFileItemProps) => {
       {!props.displayAsUnadded && (
         <div className="flex flex-row items-center gap-xs">
           <div className="rounded-sm text-xs text-text-accent">{settings.upPropName}</div>
-          {upLinks.every((l) => !l.isParentFile) && (
-            <TriangleAlert className="text-orange" size={16} />
-          )}
+          {missingLink && <TriangleAlert className="text-orange" size={16} />}
           {upLinks.length > 0 ? (
             <div className="flex flex-row flex-wrap gap-xs">
               {upLinks.map((file, i, all) => (

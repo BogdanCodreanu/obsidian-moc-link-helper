@@ -1,19 +1,20 @@
 import { StrictMode } from 'react';
-import { ItemView, MarkdownFileInfo, TAbstractFile, WorkspaceLeaf } from 'obsidian';
+import { IconName, ItemView, MarkdownFileInfo, TAbstractFile, WorkspaceLeaf } from 'obsidian';
 import { Root, createRoot } from 'react-dom/client';
 import { SideMenuView } from '../components/SideMenuView';
 import { AppContext } from '../context/AppContext';
 import {
   expandFile,
   FileData,
-  fromFilenameToFile,
+  getInFiles,
   getOutFiles,
-  getUpFiles,
   secondExpandFile,
 } from 'src/utils/fileUtils';
 import { MyPluginSettings } from 'src/main';
 
 export const FILE_LINKS_HELPER_VIEW_ID = 'file-links-helper-view';
+
+export const DELAY_TO_REFRESH = 3000;
 
 class FileLinksHelperView extends ItemView {
   root: Root | null = null;
@@ -23,6 +24,9 @@ class FileLinksHelperView extends ItemView {
   private activeEditor: MarkdownFileInfo | null = null;
 
   private settings: MyPluginSettings;
+
+  private refreshTimeout: NodeJS.Timeout | null = null;
+  private filesToRefresh: Set<string> = new Set();
 
   constructor(leaf: WorkspaceLeaf, settings: MyPluginSettings) {
     super(leaf);
@@ -46,15 +50,16 @@ class FileLinksHelperView extends ItemView {
     files.forEach((file) => {
       const outLinks = getOutFiles(file.path, this.app, this.filesByPath);
 
-      this.filesByPath[file.path].outLinks = outLinks;
+      outLinks.forEach((f) => this.filesByPath[file.path].outLinks.add(f.path));
 
       outLinks.forEach((outFile) => {
-        this.filesByPath[outFile.path].inLinks.push(this.filesByPath[file.path]);
+        this.filesByPath[outFile.path].inLinks.add(this.filesByPath[file.path].path);
       });
 
-      this.filesByPath[file.path].unresolvedLinks = Object.keys(
-        this.app.metadataCache.unresolvedLinks[file.path],
-      );
+      this.filesByPath[file.path].upFiles.forEach((f) => {
+        this.filesByPath[f].inLinks.add(file.path);
+        // this.filesByPath[f].outLinks.delete(file.path);
+      });
     });
 
     if (this.app.workspace.activeEditor?.file) {
@@ -64,33 +69,84 @@ class FileLinksHelperView extends ItemView {
     this.recreateRoot();
   }
 
-  private onCreatedFile = (f: TAbstractFile) => {
-    const file = this.app.vault.getFileByPath(f.path);
+  private onCreateFileCache = (filePath: string) => {
+    const file = this.app.vault.getFileByPath(filePath);
     if (!file) {
       return;
     }
-    this.filesByPath[f.path] = expandFile(file, this.app, this.settings);
-    secondExpandFile(this.filesByPath[f.path], this.filesByPath, this.settings);
+    const oldFile = this.filesByPath[filePath];
+    if (oldFile) {
+      // remove old links
+    }
+
+    const newFile = expandFile(file, this.app, this.settings);
+    this.filesByPath[filePath] = newFile;
+    secondExpandFile(newFile, this.filesByPath, this.settings);
+
+    const outLinks = getOutFiles(filePath, this.app, this.filesByPath);
+    outLinks.forEach((f) => newFile.outLinks.add(f.path));
+
+    const inlinks = getInFiles(filePath, this.app, this.filesByPath);
+    inlinks.forEach((f) => newFile.inLinks.add(f.path));
+
+    inlinks.forEach((link) => this.filesByPath[link.path].outLinks.add(newFile.path));
+
+    newFile.upFiles.forEach((f) => {
+      this.filesByPath[f].inLinks.add(filePath);
+      console.log('adding to inlinks', f, filePath);
+    });
+
+    console.log('created file cache', newFile);
   };
 
   private onDeletedFile = (f: TAbstractFile) => {
     const deletedFile = this.filesByPath[f.path];
 
-    deletedFile.inLinks.forEach((link) => {
-      link.outLinks = link.outLinks.filter((outlink) => outlink.path !== f.path);
+    deletedFile.inLinks.forEach((linkPath) => {
+      this.filesByPath[linkPath].outLinks.delete(f.path);
     });
-    deletedFile.outLinks.forEach((link) => {
-      link.inLinks = link.inLinks.filter((inlink) => inlink.path !== f.path);
+    deletedFile.outLinks.forEach((linkPath) => {
+      this.filesByPath[linkPath].inLinks.delete(f.path);
     });
 
     delete this.filesByPath[f.path];
   };
 
+  private startRefreshForFile = (filePath: string) => {
+    this.filesToRefresh.add(filePath);
+
+    if (this.refreshTimeout) {
+      clearTimeout(this.refreshTimeout);
+      this.refreshTimeout = null;
+    }
+    this.refreshTimeout = setTimeout(() => {
+      const filesToRefresh = [...this.filesToRefresh];
+
+      // first create new files
+      filesToRefresh
+        .filter((f) => !this.filesByPath[f])
+        .forEach((f) => {
+          this.onCreateFileCache(f);
+        });
+
+      filesToRefresh.forEach((path) => {
+        this.onDeletedFile({ path } as TAbstractFile);
+        this.onCreateFileCache(path);
+      });
+
+      this.filesToRefresh.clear();
+      this.refreshTimeout = null;
+      this.reselectFileIfActive();
+      this.recreateRoot();
+    }, DELAY_TO_REFRESH);
+
+    this.reselectFileIfActive();
+  };
+
   private registerEvents() {
     this.registerEvent(
       this.app.vault.on('create', (f) => {
-        this.onCreatedFile(f);
-        this.recreateRoot();
+        this.startRefreshForFile(f.path);
       }),
     );
 
@@ -104,54 +160,13 @@ class FileLinksHelperView extends ItemView {
     this.registerEvent(
       this.app.vault.on('rename', (f, oldPath) => {
         this.onDeletedFile(this.filesByPath[oldPath]);
-        this.onCreatedFile(f);
-        this.recreateRoot();
+        this.startRefreshForFile(f.path);
       }),
     );
 
     this.registerEvent(
       this.app.metadataCache.on('changed', (file, _, cache) => {
-        const transformedFile = this.filesByPath[file.path];
-        transformedFile.frontmatter = cache.frontmatter;
-        transformedFile.tags = cache.tags?.map((t) => t.tag) ?? [];
-
-        const newOutLinks = [...new Set(cache.links?.map((l) => l.link) ?? [])]
-          .map((l) => fromFilenameToFile(l, this.filesByPath))
-          .filter((f) => !!f);
-
-        const oldOutlinks = transformedFile.outLinks;
-        const newOutLinksPaths = newOutLinks.map((f) => f.path);
-        const oldOutLinksPaths = oldOutlinks.map((f) => f.path);
-
-        oldOutlinks.forEach((link) => {
-          const indexOfInLink =
-            link.inLinks.findIndex((inlink) => inlink.path === transformedFile.path) ?? -1;
-          if (indexOfInLink > -1 && newOutLinksPaths.indexOf(link.path) === -1) {
-            link.inLinks = link.inLinks.splice(indexOfInLink, 1);
-          }
-        });
-
-        newOutLinks.forEach((link) => {
-          const indexOfInLink =
-            link.inLinks.findIndex((inlink) => inlink.path === transformedFile.path) ?? -1;
-          if (
-            indexOfInLink === -1 &&
-            oldOutLinksPaths.indexOf(link.path) === -1 &&
-            link.path !== transformedFile.path
-          ) {
-            link.inLinks.push(transformedFile);
-          }
-        });
-
-        this.filesByPath[file.path].outLinks = newOutLinks;
-
-        this.filesByPath[file.path].upFiles = getUpFiles(
-          this.filesByPath[file.path],
-          this.filesByPath,
-          this.settings,
-        );
-
-        this.recreateRoot();
+        this.startRefreshForFile(file.path);
       }),
     );
 
@@ -163,9 +178,7 @@ class FileLinksHelperView extends ItemView {
           this.unmountRoot();
         } else {
           if (this.app.workspace.activeEditor?.file) {
-            this.activeFile = this.filesByPath[this.app.workspace.activeEditor.file.path];
-            this.activeEditor = this.app.workspace.activeEditor;
-            this.recreateRoot();
+            this.reselectFileIfActive();
           } else {
             if (!this.root) {
               this.recreateRoot();
@@ -181,6 +194,17 @@ class FileLinksHelperView extends ItemView {
         this.recreateRoot();
       }),
     );
+  }
+
+  private reselectFileIfActive() {
+    if (this.activeFile) {
+      this.activeFile = this.filesByPath[this.activeFile.path];
+    }
+    if (this.app.workspace.activeEditor?.file) {
+      this.activeEditor = this.app.workspace.activeEditor;
+      this.activeFile = this.filesByPath[this.app.workspace.activeEditor.file.path];
+    }
+    this.recreateRoot();
   }
 
   getViewType() {
@@ -210,6 +234,7 @@ class FileLinksHelperView extends ItemView {
             activeFile: this.activeFile,
             activeEditor: this.activeEditor,
             settings: this.settings,
+            reloadTime: this.filesToRefresh.size > 0 ? DELAY_TO_REFRESH : 0,
           }}
         >
           <SideMenuView />
@@ -224,6 +249,10 @@ class FileLinksHelperView extends ItemView {
 
   async onClose() {
     this.root?.unmount();
+  }
+
+  getIcon(): IconName {
+    return 'cable';
   }
 }
 

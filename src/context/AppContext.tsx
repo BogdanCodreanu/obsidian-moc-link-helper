@@ -10,6 +10,7 @@ export interface IAppContext {
     activeFile: FileData | null;
     activeEditor: MarkdownFileInfo | null;
     settings: MyPluginSettings;
+    reloadTime: number;
 }
 
 export const AppContext = createContext<IAppContext | undefined>(undefined);

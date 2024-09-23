@@ -1,4 +1,4 @@
-import { App, Plugin, PluginSettingTab, Setting, WorkspaceLeaf } from 'obsidian';
+import { App, ButtonComponent, Plugin, PluginSettingTab, Setting, WorkspaceLeaf } from 'obsidian';
 import FileLinksHelperView, { FILE_LINKS_HELPER_VIEW_ID } from './views/FileLinksHelperView';
 
 export interface MyPluginSettings {
@@ -73,7 +73,6 @@ class SampleSettingTab extends PluginSettingTab {
 
   async onSettingsUpdate() {
     await this.plugin.saveSettings();
-
     const leaves = this.app.workspace.getLeavesOfType(FILE_LINKS_HELPER_VIEW_ID);
     if (leaves.length === 0) {
       return;
@@ -87,8 +86,15 @@ class SampleSettingTab extends PluginSettingTab {
 
   display(): void {
     const { containerEl } = this;
-
     containerEl.empty();
+
+    const currentSettings = { ...this.plugin.settings };
+    let saveButton: ButtonComponent | null = null;
+
+    const showSave = () => {
+      saveButton?.setDisabled(false);
+      saveButton?.setClass('p-xl');
+    };
 
     new Setting(containerEl)
       .setName('Up Property Name')
@@ -96,10 +102,10 @@ class SampleSettingTab extends PluginSettingTab {
       .addText((text) =>
         text
           .setPlaceholder('up')
-          .setValue(this.plugin.settings.upPropName)
+          .setValue(currentSettings.upPropName)
           .onChange(async (value) => {
-            this.plugin.settings.upPropName = value;
-            await this.onSettingsUpdate();
+            currentSettings.upPropName = value;
+            showSave();
           }),
       );
 
@@ -165,17 +171,59 @@ class SampleSettingTab extends PluginSettingTab {
           tags[tag] = tag;
         });
 
-        console.log('searched tags', tags);
-
         cb.addOptions(tags)
-          .setValue(this.plugin.settings.parentTag)
+          .setValue(currentSettings.parentTag)
           .onChange(async (value) => {
             while (value.startsWith('#')) {
               value = value.substring(1);
             }
-            this.plugin.settings.parentTag = value;
-            await this.onSettingsUpdate();
+            currentSettings.parentTag = value;
+            showSave();
           });
       });
+
+    // new Setting(containerEl)
+    //   .setName('Parent Tag')
+    //   .setDesc('The tag that is used to mark a file as a parent file')
+    //   .addSearch((cb) => {
+    //     const tag = new TagSuggestModal(this.app);
+
+    //     cb.inputEl.onclick = () => {
+    //       tag.open();
+    //     }
+    //     cb.inputEl.oninput = () => {
+    //       tag.open();
+    //     }
+    //     cb.inputEl.onreset = () => {
+    //       tag.open();
+    //     }
+
+    //     cb.setPlaceholder('MOC')
+    //       .setValue(currentSettings.parentTag)
+    //       .onChange(async (value) => {
+    //         while (value.startsWith('#')) {
+    //           value = value.substring(1);
+    //         }
+    //         currentSettings.parentTag = value;
+    //         modifiedSettings = true;
+    //       });
+    //   });
+
+    //add button with text description
+
+    new Setting(containerEl)
+    .setName('Save Settings')
+    .setDesc('Click the button to save the settings and update the plugin')
+    .addButton((button) => {
+      saveButton = button;
+      return button
+        .setButtonText('Save Settings')
+        .setCta()
+        .setDisabled(true)
+        .onClick(async () => {
+          Object.assign(this.plugin.settings, currentSettings);
+          await this.onSettingsUpdate();
+        });
+    });
   }
 }

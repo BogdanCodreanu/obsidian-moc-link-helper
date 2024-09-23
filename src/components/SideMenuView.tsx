@@ -28,16 +28,30 @@ import {
 const UPDATE_INTERVAL = 200;
 
 export const SideMenuView = () => {
-  const { app, allFiles, activeFile, activeEditor, settings } = useApp();
+  const { app, allFiles, activeFile, activeEditor, settings, reloadTime } = useApp();
+  const [delayToStartRefreshAnimation, setDelayToStartRefreshAnimation] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<FileData[]>([]);
+
+  const outFiles = activeFile ? [...activeFile.outLinks].map((p) => allFiles[p]) : [];
+  const inFiles = activeFile ? [...activeFile.inLinks].map((p) => allFiles[p]) : [];
+  const upFiles = activeFile ? [...activeFile.upFiles].map((p) => allFiles[p]) : [];
+
   const [outFilesWithoutParent] = useState<FileData[]>(
-    activeFile?.outLinks.filter((f) => !fileHasUpTowardsFile(f, activeFile)) ?? [],
+    outFiles.filter((f) => !fileHasUpTowardsFile(f, activeFile!)),
   );
   const [inLinksNotInFile] = useState<FileData[]>(
-    activeFile?.inLinks.filter(
-      (f) => fileHasUpTowardsFile(f, activeFile) && !parentFileHasOutTowardsFile(activeFile, f),
-    ) ?? [],
+    inFiles.filter(
+      (f) => fileHasUpTowardsFile(f, activeFile!) && !parentFileHasOutTowardsFile(activeFile!, f),
+    ),
   );
+
+  useEffect(() => {
+    if (reloadTime > 0) {
+      setTimeout(() => {
+        setDelayToStartRefreshAnimation(true);
+      }, 100);
+    }
+  }, []);
 
   useEffect(() => {
     const intervalId = setInterval(() => {
@@ -68,11 +82,32 @@ export const SideMenuView = () => {
     return () => clearInterval(intervalId);
   }, [app, activeEditor]);
 
-  if (!activeFile) {
-    return <div>No active file</div>;
-  }
-
   const useSelectedFiles = selectedFiles.length > 0;
+
+  const loadingBar = (
+    <div className="w-sm mt-xs h-1 rounded-full bg-base-40">
+      <div
+        className={`h-1 rounded-sm bg-text-accent transition-all duration-[3000ms] ease-linear ${delayToStartRefreshAnimation ? 'w-full' : reloadTime > 0 ? 'w-0' : 'w-full'}`}
+      ></div>
+    </div>
+  );
+
+  if (!activeFile) {
+    return (
+      <div className='pt-xl'>
+          {loadingBar}
+          <div className="gap-cd flex w-full flex-col items-center justify-center text-base-70">
+          <Bird size={32} />
+          <div className="mx-xs mb-s text-sm">No selected file.</div>
+          {reloadTime > 0 && (
+            <div className="text-xs text-base-60">
+              Waiting for file to re-cache.
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   const addUpLinkToNotes = async (notes: FileData[]) => {
     await Promise.all(notes.map((n) => addUpLinkToNote(n, activeFile, app, allFiles, settings)));
@@ -168,7 +203,7 @@ export const SideMenuView = () => {
       </div>
 
       {/* NOTES LINK STATUS */}
-      {activeFile.outLinks.length === 0 ? (
+      {activeFile.outLinks.size === 0 ? (
         <div className="gap-cd flex w-full flex-col items-center justify-center text-base-70">
           <Bird size={32} />
           <div className="mx-xs mb-s text-sm">No notes are referenced in here.</div>
@@ -191,7 +226,7 @@ export const SideMenuView = () => {
 
       {/* SELECTABLE NOTES */}
       <div className={`mx-xs mb-xs flex flex-col gap-xs ${useSelectedFiles ? 'mt-[-15px]' : ''}`}>
-        {activeFile.outLinks.map((file) => (
+        {outFiles.map((file) => (
           <FileItem
             key={file.path}
             file={file}
@@ -206,15 +241,13 @@ export const SideMenuView = () => {
       </div>
 
       {/* BUTTONS */}
-      {activeFile.outLinks.length > 0 ? (
+      {outFiles.length > 0 ? (
         <div className={`flex w-full flex-row flex-wrap justify-around gap-s`}>
           <Button
             onClick={() =>
               addUpLinkToNotes(
                 useSelectedFiles
-                  ? selectedFiles.filter(
-                      (f) => !f.upFiles.map((f) => f.path).includes(activeFile.path),
-                    )
+                  ? selectedFiles.filter((f) => ![...f.upFiles].includes(activeFile.path))
                   : outFilesWithoutParent,
               )
             }
@@ -222,9 +255,7 @@ export const SideMenuView = () => {
             label={useSelectedFiles ? 'Link selected files' : 'Link all'}
             isDisabled={
               useSelectedFiles
-                ? selectedFiles.every((f) =>
-                    f.upFiles.map((u) => u.path).some((p) => p === activeFile.path),
-                  )
+                ? selectedFiles.every((f) => [...f.upFiles].some((p) => p === activeFile.path))
                 : outFilesWithoutParent.length === 0
             }
             className="text-green"
@@ -233,20 +264,16 @@ export const SideMenuView = () => {
             onClick={() =>
               removeUpLinkFromNotes(
                 useSelectedFiles
-                  ? selectedFiles.filter((f) =>
-                      f.upFiles.map((f) => f.path).includes(activeFile.path),
-                    )
-                  : activeFile.outLinks,
+                  ? selectedFiles.filter((f) => [...f.upFiles].includes(activeFile.path))
+                  : outFiles,
               )
             }
             icon={<Unlink size={16} />}
             label={useSelectedFiles ? 'Unlink selected files' : 'Unlink all'}
             isDisabled={
               useSelectedFiles
-                ? !selectedFiles.some((f) =>
-                    f.upFiles.map((u) => u.path).some((p) => p === activeFile.path),
-                  )
-                : outFilesWithoutParent.length === activeFile.outLinks.length
+                ? !selectedFiles.some((f) => [...f.upFiles].some((p) => p === activeFile.path))
+                : outFilesWithoutParent.length === outFiles.length
             }
             className="text-orange"
           />
@@ -262,14 +289,14 @@ export const SideMenuView = () => {
         <span className="font-semibold text-text-accent">#{settings.parentTag}</span>.
       </div>
       <hr />
-      {activeFile.upFiles.length > 0 ? (
+      {upFiles.length > 0 ? (
         <div className="mt-s flex flex-col gap-s">
           <div className="flex flex-row items-center gap-s font-bold">
             <LayoutTemplate size={16} />
             Parent Notes
           </div>
-          <div className='flex flex-col gap-xs mx-xs'>
-            {activeFile.upFiles.map((file) => (
+          <div className="mx-xs flex flex-col gap-xs">
+            {upFiles.map((file) => (
               <FileItem
                 key={file.path}
                 file={file}
@@ -297,6 +324,7 @@ export const SideMenuView = () => {
           {activeFile.isMoc ? <LayoutTemplate /> : <NotebookText />}
           <div>{activeFile?.nameWithoutExtension}</div>
         </div>
+        {loadingBar}
         <div className="mb-l" />
 
         {activeFile.isMoc ? (

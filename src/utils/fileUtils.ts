@@ -6,12 +6,13 @@ export interface FileData extends TFile {
   frontmatter?: FrontMatterCache;
   nameWithoutExtension: string;
   uniqueLinkedName: string;
-  outLinks: FileData[];
-  inLinks: FileData[];
+  outLinks: Set<string>;
+  inLinks: Set<string>;
   unresolvedLinks: string[];
   tags: string[];
-  upFiles: FileData[]; // the files in the 'up' prop
+  upFiles: Set<string>; // the files in the 'up' prop
   isMoc: boolean;
+  isInactiveLink?: boolean;
 }
 
 export const expandFile = (file: TFile, app: App, settings: MyPluginSettings): FileData => {
@@ -26,11 +27,11 @@ export const expandFile = (file: TFile, app: App, settings: MyPluginSettings): F
     uniqueLinkedName: nameWithoutExtension,
     frontmatter,
     nameWithoutExtension,
-    outLinks: (file as FileData).outLinks ?? [],
-    inLinks: (file as FileData).inLinks ?? [],
+    outLinks: new Set<string>(),
+    inLinks: new Set<string>(),
     unresolvedLinks: (file as FileData).unresolvedLinks ?? [],
     tags: frontmatter?.tags ?? [],
-    upFiles: (file as FileData).upFiles ?? [],
+    upFiles: new Set<string>(),
     isMoc: tags.includes(settings.parentTag) ?? false,
   };
 };
@@ -41,7 +42,13 @@ export const secondExpandFile = (
   settings: MyPluginSettings,
 ) => {
   file.uniqueLinkedName = generateUniqueLinkedName(file, allFiles);
-  file.upFiles = getUpFiles(file, allFiles, settings);
+  getUpFiles(file, allFiles, settings)
+    .map((f) => f.path)
+    .forEach((f) => file.upFiles.add(f));
+
+  // const upFilesNotInOutlinks = [...file.upFiles].filter((f) => ![...file.outLinks].includes(f));
+
+  // upFilesNotInOutlinks.forEach((f) => file.outLinks.add(f));
 };
 
 export const getUpFiles = (
@@ -63,15 +70,36 @@ export const fromFilenameToFile = (
   return file || null;
 };
 
+export const getInFiles = (
+  filePath: string,
+  app: App,
+  allFiles: Record<string, FileData>,
+): FileData[] => {
+  const inLinks = Object.keys(app.metadataCache.resolvedLinks)
+    .filter((path) => Object.keys(app.metadataCache.resolvedLinks[path]).includes(filePath))
+    .map((l) => allFiles[l])
+    .filter((f) => f.path !== filePath);
+
+  return inLinks;
+};
+
 export const getOutFiles = (
   filePath: string,
   app: App,
   allFiles: Record<string, FileData>,
 ): FileData[] => {
+  const links = app.metadataCache.resolvedLinks[filePath];
   const outLinks =
-    Object.keys(app.metadataCache.resolvedLinks[filePath])
-      ?.map((l) => allFiles[l])
-      .filter((f) => !!f) ?? [];
+    Object.keys(links)
+      .filter((link) => {
+        if (links[link] <= 1 && allFiles[filePath].upFiles.has(link)) {
+          return false;
+        }
+        return true;
+      })
+      .map((l) => allFiles[l])
+      .filter((f) => !!f)
+      .filter((f) => f.path !== filePath) ?? [];
 
   return outLinks;
 };
@@ -83,7 +111,7 @@ export const addUpLinkToNote = async (
   allFiles: Record<string, FileData>,
   settings: MyPluginSettings,
 ) => {
-  if (!childNote.upFiles.map((f) => f.path).includes(parentNote.path)) {
+  if (![...childNote.upFiles].includes(parentNote.path)) {
     await app.fileManager.processFrontMatter(childNote, (fm) => {
       if (!fm[settings.upPropName]) {
         fm[settings.upPropName] = [];
@@ -159,12 +187,15 @@ export const generateUniqueLinkedName = (
 };
 
 export const fileHasUpTowardsFile = (file: FileData, towardsFile: FileData): boolean => {
-  return file.upFiles.map((f) => f.path).includes(towardsFile.path);
+  if (!file || !towardsFile) {
+    return false;
+  }
+  return [...file.upFiles].includes(towardsFile.path);
 };
 
 export const parentFileHasOutTowardsFile = (
   parentFile: FileData,
   towardsFile: FileData,
 ): boolean => {
-  return parentFile.outLinks.map((f) => f.path).includes(towardsFile.path);
+  return [...parentFile.outLinks].includes(towardsFile.path);
 };

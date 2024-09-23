@@ -9,6 +9,19 @@ module.exports = {
       padding: {
         1: '1px',
       },
+      keyframes: {
+        'scale-in': {
+          '0%': {
+            width: '0',
+          },
+          '100%': {
+            width: '100%',
+          },
+        },
+        animation: {
+          'scale-in': 'scale-in 2s ease-in-out',
+        },
+      },
     },
     margin: {
       xs: '.236em',
@@ -61,10 +74,10 @@ module.exports = {
       'interactive-accent-hover': 'var(--color-accent-1)',
       'text-normal': 'var(--text-normal)',
       'bg-col': 'var(--background-primary)',
-      'orange': 'var(--color-orange)',
-      'red': 'var(--color-red)',
-      'green': 'var(--color-green)',
-      'pillBackground': 'var(--pill-background)',
+      orange: 'var(--color-orange)',
+      red: 'var(--color-red)',
+      green: 'var(--color-green)',
+      pillBackground: 'var(--pill-background)',
     },
   },
 };
