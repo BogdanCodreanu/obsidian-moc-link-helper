@@ -69,7 +69,7 @@ module.exports = {
       //   2: 'var(--color-accent-2)',
       //   hsl: 'var(--color-accent-hsl)',
       // },
-      'text-accent': 'var(--color-accent-1);',
+      'text-accent': 'var(--color-accent-1)',
       'interactive-accent': 'var(--color-accent)',
       'interactive-accent-hover': 'var(--color-accent-1)',
       'text-normal': 'var(--text-normal)',

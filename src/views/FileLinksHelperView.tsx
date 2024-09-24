@@ -65,7 +65,6 @@ class FileLinksHelperView extends ItemView {
     if (this.app.workspace.activeEditor?.file) {
       this.activeFile = this.filesByPath[this.app.workspace.activeEditor.file.path];
     }
-    console.log('all files', this.filesByPath);
     this.recreateRoot();
   }
 
@@ -103,10 +102,10 @@ class FileLinksHelperView extends ItemView {
     const deletedFile = this.filesByPath[f.path];
 
     deletedFile.inLinks.forEach((linkPath) => {
-      this.filesByPath[linkPath].outLinks.delete(f.path);
+      this.filesByPath[linkPath]?.outLinks.delete(f.path);
     });
     deletedFile.outLinks.forEach((linkPath) => {
-      this.filesByPath[linkPath].inLinks.delete(f.path);
+      this.filesByPath[linkPath]?.inLinks.delete(f.path);
     });
 
     delete this.filesByPath[f.path];
