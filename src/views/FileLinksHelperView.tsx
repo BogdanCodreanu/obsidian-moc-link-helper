@@ -92,10 +92,7 @@ class FileLinksHelperView extends ItemView {
 
     newFile.upFiles.forEach((f) => {
       this.filesByPath[f].inLinks.add(filePath);
-      console.log('adding to inlinks', f, filePath);
     });
-
-    console.log('created file cache', newFile);
   };
 
   private onDeletedFile = (f: TAbstractFile) => {
