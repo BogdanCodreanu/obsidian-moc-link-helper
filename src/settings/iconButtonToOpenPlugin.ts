@@ -112,8 +112,8 @@ export class IconButtonToOpenPlugin {
 
   static GetFileFromLeaf(leaf: WorkspaceLeaf): TFile | undefined {
     if (leaf.view.getViewType() === 'markdown') {
-      if ('file' in leaf.view && leaf.view.file instanceof TFile) {
-        return leaf.view.file;
+      if ('file' in leaf.view && (leaf.view as any).file instanceof TFile) {
+        return (leaf.view as any).file;
       }
     }
     return undefined;

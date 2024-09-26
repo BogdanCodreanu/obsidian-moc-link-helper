@@ -51,6 +51,10 @@ export const secondExpandFile = (
   // upFilesNotInOutlinks.forEach((f) => file.outLinks.add(f));
 };
 
+export const fileIsValid = (file: FileData): boolean => {
+  return !!file && !!file.path;
+};
+
 export const getUpFiles = (
   file: FileData,
   allFiles: Record<string, FileData>,
@@ -76,7 +80,7 @@ export const getInFiles = (
   allFiles: Record<string, FileData>,
 ): FileData[] => {
   const inLinks = Object.keys(app.metadataCache.resolvedLinks)
-    .filter((path) => Object.keys(app.metadataCache.resolvedLinks[path]).includes(filePath))
+    .filter((path) => Object.keys(app.metadataCache.resolvedLinks[path] ?? []).includes(filePath))
     .map((l) => allFiles[l])
     .filter((f) => f.path !== filePath);
 
@@ -88,7 +92,7 @@ export const getOutFiles = (
   app: App,
   allFiles: Record<string, FileData>,
 ): FileData[] => {
-  const links = app.metadataCache.resolvedLinks[filePath];
+  const links = app.metadataCache.resolvedLinks[filePath] ?? [];
   const outLinks =
     Object.keys(links)
       .filter((link) => {

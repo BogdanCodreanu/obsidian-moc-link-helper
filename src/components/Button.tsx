@@ -4,6 +4,7 @@ interface IButtonProps {
   className?: string;
   icon?: JSX.Element;
   label?: string;
+  ariaLabel?: string;
 }
 
 const Button = (props: IButtonProps) => {
@@ -12,6 +13,7 @@ const Button = (props: IButtonProps) => {
       className={`flex items-center gap-xs p-m text-xs ${props.className}`}
       onClick={props.onClick}
       disabled={props.isDisabled}
+      aria-label={props.ariaLabel}
     >
       {props.icon}
       {props.label}

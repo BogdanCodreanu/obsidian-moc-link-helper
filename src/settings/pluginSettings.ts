@@ -137,9 +137,11 @@ export class SampleSettingTab extends PluginSettingTab {
           });
       });
 
+    new Setting(containerEl).setHeading().setName('Workspace UI');
+
     new Setting(containerEl)
       .setName('Show icon to open plugin')
-      .setDesc('Show an icon next to the file name to open the plugin')
+      .setDesc('Show an icon next to the file name of parent notes to open the plugin')
       .addToggle((toggle) => {
         toggle.setValue(currentSettings.showIconToOpenPlugin).onChange(async (value) => {
           currentSettings.showIconToOpenPlugin = value;

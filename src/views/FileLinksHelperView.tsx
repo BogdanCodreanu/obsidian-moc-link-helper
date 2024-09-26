@@ -6,6 +6,7 @@ import { AppContext } from '../context/AppContext';
 import {
   expandFile,
   FileData,
+  fileIsValid,
   getInFiles,
   getOutFiles,
   secondExpandFile,
@@ -14,7 +15,7 @@ import { MyPluginSettings } from 'src/main';
 
 export const FILE_LINKS_HELPER_VIEW_ID = 'file-links-helper-view';
 
-export const DELAY_TO_REFRESH = 3000;
+export const DELAY_TO_REFRESH = 1000;
 
 class FileLinksHelperView extends ItemView {
   root: Root | null = null;
@@ -96,21 +97,27 @@ class FileLinksHelperView extends ItemView {
   };
 
   private onDeletedFile = (f: TAbstractFile) => {
+    if (!f?.path) {
+      return;
+    }
     const deletedFile = this.filesByPath[f.path];
 
-    deletedFile.inLinks.forEach((linkPath) => {
-      this.filesByPath[linkPath]?.outLinks.delete(f.path);
-    });
-    deletedFile.outLinks.forEach((linkPath) => {
-      this.filesByPath[linkPath]?.inLinks.delete(f.path);
-    });
+    if (fileIsValid(deletedFile)) {
+      deletedFile.inLinks.forEach((linkPath) => {
+        this.filesByPath[linkPath]?.outLinks.delete(f.path);
+      });
+      deletedFile.outLinks.forEach((linkPath) => {
+        this.filesByPath[linkPath]?.inLinks.delete(f.path);
+      });
+    }
 
     delete this.filesByPath[f.path];
   };
 
   private startRefreshForFile = (filePath: string) => {
     this.filesToRefresh.add(filePath);
-
+    const willRecreateRoot = !this.refreshTimeout;
+    
     if (this.refreshTimeout) {
       clearTimeout(this.refreshTimeout);
       this.refreshTimeout = null;
@@ -125,6 +132,7 @@ class FileLinksHelperView extends ItemView {
           this.onCreateFileCache(f);
         });
 
+      // then delete and recreate
       filesToRefresh.forEach((path) => {
         this.onDeletedFile({ path } as TAbstractFile);
         this.onCreateFileCache(path);
@@ -136,7 +144,7 @@ class FileLinksHelperView extends ItemView {
       this.recreateRoot();
     }, DELAY_TO_REFRESH);
 
-    this.reselectFileIfActive();
+    this.reselectFileIfActive(willRecreateRoot);
   };
 
   private registerEvents() {
@@ -192,15 +200,32 @@ class FileLinksHelperView extends ItemView {
     );
   }
 
-  private reselectFileIfActive() {
-    if (this.activeFile) {
-      this.activeFile = this.filesByPath[this.activeFile.path];
+  private reselectFileIfActive(forceRecreate = false) {
+    const isVisible = (this.leaf as any)?.width > 0;
+    if (!isVisible) {
+      this.unmountRoot();
+      return;
     }
+
+    let recreateRoot = false;
+    if (this.activeFile !== this.filesByPath[this.activeFile?.path ?? '']) {
+      recreateRoot = true;
+    }
+
     if (this.app.workspace.activeEditor?.file) {
+      if (this.activeFile?.path !== this.app.workspace.activeEditor.file.path) {
+        recreateRoot = true;
+      }
       this.activeEditor = this.app.workspace.activeEditor;
       this.activeFile = this.filesByPath[this.app.workspace.activeEditor.file.path];
     }
-    this.recreateRoot();
+    if (this.activeFile) {
+      this.activeFile = this.filesByPath[this.activeFile.path];
+    }
+
+    if (recreateRoot || forceRecreate) {
+      this.recreateRoot();
+    }
   }
 
   getViewType() {
