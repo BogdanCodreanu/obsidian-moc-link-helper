@@ -1,22 +1,34 @@
 import { App, ButtonComponent, PluginSettingTab, Setting } from 'obsidian';
-import MyPlugin, { MyPluginSettings } from '../main';
+import FileLinksHelperPlugin from '../main';
 
-export class SampleSettingTab extends PluginSettingTab {
-  plugin: MyPlugin;
 
+export interface PluginCustomSettings {
+  upPropName: string;
+  parentTag: string;
+  showIconToOpenPlugin: boolean;
+}
+
+
+export const DEFAULT_SETTINGS: PluginCustomSettings = {
+  upPropName: 'up',
+  parentTag: '#MOC',
+  showIconToOpenPlugin: true,
+};
+
+export class SettingTab extends PluginSettingTab {
   constructor(
     app: App,
-    plugin: MyPlugin,
+    private plugin: FileLinksHelperPlugin,
     private onChangeIconShow: () => void,
   ) {
     super(app, plugin);
     this.plugin = plugin;
   }
 
-  async onSettingsUpdate(newSettings: MyPluginSettings) {
+  async onSettingsUpdate(newSettings: PluginCustomSettings) {
     Object.assign(this.plugin.settings, newSettings);
     await this.plugin.saveSettings();
-    this.app.workspace.trigger('file-links-helper-view-reinit');
+    this.app.workspace.trigger('file-links-helper:on-reinit-all-files');
   }
 
   display(): void {

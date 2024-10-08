@@ -1,8 +1,7 @@
 import { useApp } from '../hooks/useApp';
 import { useEffect, useState } from 'react';
 import { getFilesFromText } from 'src/utils/text';
-import FileItem from './FileItem';
-import Button from './Button';
+import Button from './general/Button';
 import {
   addUpLinkToNote,
   FileData,
@@ -15,9 +14,9 @@ import {
 import {
   Bird,
   Check,
+  FolderSync,
   LayoutTemplate,
   Link,
-  Link2Off,
   Notebook,
   NotebookText,
   TextCursorInput,
@@ -25,21 +24,38 @@ import {
   TriangleAlert,
   Unlink,
 } from 'lucide-react';
+import { MarkdownFileInfo } from 'obsidian';
+import Description from './general/Description';
+import StatusText from './general/StatusText';
+import Header from './general/Header';
+import ListOfItems from './ListOfItems';
+import ChildNoteView from './ChildNoteView';
 
 const SELECTION_UPDATE_INTERVAL = 200;
 const REFRESH_ANIMATION_DURATION = 'duration-[1000ms]';
 
-export const SideMenuView = () => {
-  const { app, allFiles, activeFile, activeEditor, settings, reloadTime } = useApp();
+export const ReactView = () => {
+  const { plugin, view } = useApp();
+  const { app, settings, allFiles } = plugin;
+
   const [delayToStartRefreshAnimation, setDelayToStartRefreshAnimation] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<FileData[]>([]);
   const [, setFilesByLines] = useState<{ [line: number]: FileData[] }>({});
   const [linesByFilePath, setLinesByFilePath] = useState<{ [path: string]: number[] }>({});
 
+  const [activeFile, setActiveFile] = useState<FileData | undefined>(undefined);
+  const [allNotesIncluded, setAllNotesIncluded] = useState<FileData[]>([]);
+  const [noMocNotesIncluded, setNoMocNotesIncluded] = useState<FileData[]>([]);
+  const [mocNotesIncluded, setMocNotesIncluded] = useState<FileData[]>([]);
+
+  const [activeEditor, setActiveEditor] = useState<MarkdownFileInfo | undefined>(undefined);
+  const useSelectedFiles = selectedFiles.length > 0;
+
   const outFiles = activeFile
     ? [...activeFile.outLinks].map((p) => allFiles[p]).filter(fileIsValid)
     : [];
   const childNoMOCNotes = outFiles.filter((f) => !f.isMoc);
+
   const inFiles = activeFile
     ? [...activeFile.inLinks].map((p) => allFiles[p]).filter(fileIsValid)
     : [];
@@ -56,14 +72,47 @@ export const SideMenuView = () => {
     ),
   );
 
+  // register file change events
   useEffect(() => {
-    if (reloadTime > 0) {
-      setTimeout(() => {
-        setDelayToStartRefreshAnimation(true);
-      }, 100);
-    }
+    view.registerEvent(
+      app.workspace.on('file-links-helper:on-change-active-file', (file) => {
+        console.log('file changed', file);
+
+        onChangeActiveFile(file);
+      }),
+    );
   }, []);
 
+  const onChangeActiveFile = (file: FileData) => {
+    if (file.path === activeFile?.path) {
+      return;
+    }
+
+    setActiveFile(file);
+    getFiles(file);
+  };
+
+  const getFiles = (mainFile: FileData | undefined) => {
+    const outFiles = mainFile ? [...mainFile.outLinks].map((p) => allFiles[p]).filter(fileIsValid) : [];
+    // console.log('out files 1', [...file.outLinks]);
+    // console.log('out files 2', [...file.outLinks].map((p) => allFiles[p]));
+    // console.log('out files 3', outFiles);
+    // console.log("all files", allFiles);
+
+    setAllNotesIncluded(outFiles);
+    setNoMocNotesIncluded(outFiles.filter((f) => !f.isMoc));
+    setMocNotesIncluded(outFiles.filter((f) => f.isMoc));
+  }
+
+  useEffect(() => {
+    // if (reloadTime > 0) {
+    //   setTimeout(() => {
+    //     setDelayToStartRefreshAnimation(true);
+    //   }, 100);
+    // }
+  }, []);
+
+  // INTERPRET ALL LINK POSITIONS
   useEffect(() => {
     if (!activeEditor || !activeEditor.editor || !activeFile || !activeFile.isMoc) {
       return;
@@ -103,7 +152,12 @@ export const SideMenuView = () => {
     console.log('recreated root');
   }, [activeFile, activeEditor]);
 
+  // UPDATE ACTIVE FILE SELECTION
   useEffect(() => {
+    if (!activeEditor || !activeEditor.editor || !activeFile || !activeFile.isMoc) {
+      return;
+    }
+
     const intervalId = setInterval(() => {
       if (!activeEditor || !activeEditor.editor || !activeFile) {
         return;
@@ -132,7 +186,7 @@ export const SideMenuView = () => {
       }
     }, SELECTION_UPDATE_INTERVAL);
     return () => clearInterval(intervalId);
-  }, [app, activeEditor]);
+  }, [activeFile, activeEditor]);
 
   const moveCursorToFile = (file: FileData) => {
     if (!activeEditor || !activeEditor.editor) {
@@ -155,38 +209,13 @@ export const SideMenuView = () => {
     activeEditor.editor.focus();
   };
 
-  const useSelectedFiles = selectedFiles.length > 0;
-
-  const loadingBar = (
-    <div className="w-sm mt-xs h-1.5 rounded-full border-1 border-text-accent">
-      <div
-        className={`h-1 rounded-sm bg-text-accent transition-all ${REFRESH_ANIMATION_DURATION} ease-linear ${delayToStartRefreshAnimation ? 'w-full' : reloadTime > 0 ? 'w-0' : 'w-full'}`}
-      ></div>
-    </div>
-  );
-
-  if (!activeFile) {
-    return (
-      <div className="pt-xl">
-        {loadingBar}
-        <div className="gap-cd flex w-full flex-col items-center justify-center text-base-70">
-          <Bird size={32} />
-          <div className="mx-xs mb-s text-sm">No selected file.</div>
-          {reloadTime > 0 && (
-            <div className="text-xs text-base-60">Waiting for file to re-cache.</div>
-          )}
-        </div>
-      </div>
-    );
-  }
-
   const addUpLinkToNotes = async (notes: FileData[]) => {
-    await Promise.all(notes.map((n) => addUpLinkToNote(n, activeFile, app, allFiles, settings)));
+    await Promise.all(notes.map((n) => addUpLinkToNote(n, activeFile!, app, allFiles, settings)));
   };
 
   const removeUpLinkFromNotes = async (notes: FileData[]) => {
     await Promise.all(
-      notes.map((n) => removeUpLinkFromNote(n, activeFile, app, allFiles, settings)),
+      notes.map((n) => removeUpLinkFromNote(n, activeFile!, app, allFiles, settings)),
     );
   };
 
@@ -198,7 +227,7 @@ export const SideMenuView = () => {
     const cursor = activeEditor.editor.getCursor();
     const lineNumber = cursor.line;
 
-    await app.vault.process(activeFile, (text) => {
+    await app.vault.process(activeFile!, (text) => {
       return text.split('\n').reduce((acc, line, index) => {
         if (index === lineNumber) {
           return `${acc}${line}\n${generateMarkdownLink(note, allFiles)}\n`;
@@ -213,29 +242,55 @@ export const SideMenuView = () => {
     await Promise.all(notes.map((n) => insertNoteAtCursorPosition(n)));
   };
 
+  const refreshLinks = async () => {
+    app.workspace.trigger('file-links-helper:on-reinit-all-files');
+  };
+
+  const loadingBar = (
+    <div className="w-sm mt-xs h-1.5 rounded-full border-1 border-text-accent">
+      {/* <div
+        className={`h-1 rounded-sm bg-text-accent transition-all ${REFRESH_ANIMATION_DURATION} ease-linear ${delayToStartRefreshAnimation ? 'w-full' : reloadTime > 0 ? 'w-0' : 'w-full'}`}
+      ></div> */}
+    </div>
+  );
+
+  if (!activeFile) {
+    return (
+      <div className="flex flex-col gap-s pt-xl">
+        {loadingBar}
+        <Description
+          text={'No file selected.'}
+          smallerText="If Obsidian just started, click here, then click back on the text editor."
+          bigCenterIcon={<Bird size={32} />}
+        />
+      </div>
+    );
+  }
+
   const inLinksNotInFileComponent = (
     <div className="mx-xs mb-l flex max-h-[30vh] flex-shrink-0 flex-col overflow-auto">
-      <div className="flex flex-row items-center gap-s font-bold text-orange">
-        <TriangleAlert size={16} />
-        <div>Notes not added ({inLinksNotInFile.length})</div>
-      </div>
-      <div className="mx-xs mb-s text-xs text-base-60">
-        Here are notes that have{' '}
-        <span className="font-semibold text-text-accent">{settings.upPropName}</span> linking to
-        this note, but aren't added here.
-      </div>
-      <div className="mx-xs mb-s flex flex-col gap-xs overflow-auto">
-        {inLinksNotInFile.map((file, index) => (
-          <FileItem
-            key={file?.path ?? index}
-            file={file}
-            parentFile={activeFile}
-            isSelected={false}
-            displayAsUnadded
-            addAtCursor={insertNoteAtCursorPosition}
-          />
-        ))}
-      </div>
+      <StatusText
+        text={`Notes not added (${10})`}
+        startingIcon={<TriangleAlert size={16} />}
+        color="text-orange"
+      />
+
+      <Description
+        text={
+          <div>
+            Here are notes that have{' '}
+            <span className="font-semibold text-text-accent">{settings.upPropName}</span> linking to
+            this note, but aren't added here.
+          </div>
+        }
+      />
+
+      <ListOfItems
+        parentFile={activeFile}
+        files={inLinksNotInFile}
+        type="AS_UNADDED"
+        insertAtCursor={insertNoteAtCursorPosition}
+      />
 
       <div className="flex w-full flex-row justify-end">
         <Button
@@ -255,29 +310,30 @@ export const SideMenuView = () => {
       className={`mx-xs flex flex-col gap-xs overflow-auto rounded-xl border-dotted transition-all ${useSelectedFiles ? 'border-2 border-base-50 border-opacity-100 bg-base-25 p-m' : 'border-none border-opacity-0'}`}
     >
       {/* HEADER */}
-      <div className="flex flex-row items-center gap-s font-bold">
-        <Notebook size={16} />
-        {useSelectedFiles ? `Selected Notes (${selectedFiles.length})` : 'Notes'}
-      </div>
+      <Header title={useSelectedFiles ? 'Selected Notes' : 'Notes'} icon={<Notebook size={16} />} />
 
       {/* DESCRIPTION */}
-      <div className="mx-xs mb-s text-xs text-base-60">
-        Notes included in this{' '}
-        <span className="font-semibold text-text-accent">{settings.parentTag}</span> parent note.
-        You can quickly modify their{' '}
-        <span className="font-semibold text-text-accent">{settings.upPropName}</span> link in
-        relation to this parent note. You can also
-        <span className="mx-xs inline-block">
-          <TextSelect size={15} />
-        </span>
-        select text to choose specific notes.
-      </div>
+      <Description
+        text={
+          <div>
+            Notes included in this{' '}
+            <span className="font-semibold text-text-accent">{settings.parentTag}</span> parent
+            note. You can quickly modify their{' '}
+            <span className="font-semibold text-text-accent">{settings.upPropName}</span> link in
+            relation to this parent note. You can also
+            <span className="mx-xs inline-block">
+              <TextSelect size={15} />
+            </span>
+            select text to choose specific notes.
+          </div>
+        }
+      />
 
       <div
         className={`mb-xs flex flex-row-reverse items-end gap-xs ${useSelectedFiles ? 'mb-xl' : ''}`}
       >
         {/* BUTTONS */}
-        {outFiles.length > 0 ? (
+        {allNotesIncluded.length > 0 ? (
           <div
             className={`flex w-full flex-row flex-wrap justify-end gap-s ${useSelectedFiles ? 'justify-evenly' : ''}`}
           >
@@ -303,7 +359,7 @@ export const SideMenuView = () => {
                 removeUpLinkFromNotes(
                   useSelectedFiles
                     ? selectedFiles.filter((f) => [...f.upFiles].includes(activeFile.path))
-                    : outFiles,
+                    : allNotesIncluded,
                 )
               }
               icon={<Unlink size={16} />}
@@ -311,7 +367,7 @@ export const SideMenuView = () => {
               isDisabled={
                 useSelectedFiles
                   ? !selectedFiles.some((f) => [...f.upFiles].some((p) => p === activeFile.path))
-                  : outFilesWithoutParent.length === outFiles.length
+                  : outFilesWithoutParent.length === allNotesIncluded.length
               }
               className="text-orange"
             />
@@ -320,7 +376,7 @@ export const SideMenuView = () => {
 
         {/* NOTES LINK STATUS */}
         {!useSelectedFiles &&
-          (outFiles.length === 0 ? (
+          (allNotesIncluded.length === 0 ? (
             <div className="gap-cd flex w-full flex-col items-center justify-center text-base-70">
               <Bird size={32} />
               <div className="mx-xs mb-s text-sm">No notes are referenced in here.</div>
@@ -343,61 +399,26 @@ export const SideMenuView = () => {
       </div>
 
       {/* SELECTABLE NOTES */}
-      <div className={`mx-xs flex flex-grow-0 flex-col gap-xs overflow-auto pb-xxl`}>
-        {(useSelectedFiles ? selectedFiles : outFiles).map((file, index) => (
-          <FileItem
-            key={file?.path ?? index}
-            file={file}
-            parentFile={activeFile}
-            isSelected={selectedFiles.findIndex((f) => f.path === file.path) !== -1}
-            moveCursorToFile={moveCursorToFile}
-          />
-        ))}
-      </div>
-    </div>
-  );
-
-  const childNoteComponent = (
-    <div className="mx-xs flex flex-col gap-s">
-      <div className="text-xs text-base-60">
-        This is a child note. To work with notes that link to here, tag this note with{' '}
-        <span className="font-semibold text-text-accent">{settings.parentTag}</span>.
-      </div>
-      <hr />
-      {upFiles.length > 0 ? (
-        <div className="mt-s flex flex-col gap-s">
-          <div className="flex flex-row items-center gap-s font-bold">
-            <LayoutTemplate size={16} />
-            Parent Notes
-          </div>
-          <div className="mx-xs flex flex-col gap-xs">
-            {upFiles.map((file, index) => (
-              <FileItem
-                key={file?.path ?? index}
-                file={file}
-                parentFile={activeFile}
-                isSelected={false}
-                titleOnly
-              />
-            ))}
-          </div>
-        </div>
-      ) : (
-        <div className="flex w-full flex-col items-center justify-center pt-xl text-base-70">
-          <Link2Off size={32} />
-          <div className="mx-xs mb-s text-sm">Unlinked Note</div>
-        </div>
-      )}
+      <ListOfItems
+        files={useSelectedFiles ? selectedFiles : allNotesIncluded}
+        parentFile={activeFile}
+        type={useSelectedFiles ? 'AS_SELECTED' : 'SIMPLE'}
+        moveCursorToFile={moveCursorToFile}
+      />
     </div>
   );
 
   return (
-    <div className="fixed bottom-0 top-0 flex flex-col">
-      <div className="sticky top-0 pb-s pr-[12px]">
-        <div className="flex flex-row items-center gap-s text-lg text-text-accent">
-          {activeFile.isMoc ? <LayoutTemplate /> : <NotebookText />}
-          <div>{activeFile?.nameWithoutExtension}</div>
+    <div className="fixed bottom-0 top-[12px] flex flex-col">
+      <div className="sticky top-[12px] pb-s pr-[12px]">
+        <div className="flex flex-row justify-between">
+          <div className="flex flex-row items-center gap-s text-lg text-text-accent">
+            {activeFile.isMoc ? <LayoutTemplate /> : <NotebookText />}
+            <div>{activeFile?.nameWithoutExtension}</div>
+          </div>
+          <Button onClick={refreshLinks} ariaLabel="Refresh links" icon={<FolderSync />} />
         </div>
+
         {loadingBar}
       </div>
 
@@ -408,7 +429,7 @@ export const SideMenuView = () => {
           {outNotesInParent}
         </>
       ) : (
-        childNoteComponent
+        <ChildNoteView settings={settings} upFiles={upFiles} activeFile={activeFile} />
       )}
     </div>
   );

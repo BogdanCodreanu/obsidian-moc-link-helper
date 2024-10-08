@@ -2,7 +2,7 @@ import { useApp } from 'src/hooks/useApp';
 import { useEffect, useState } from 'react';
 import { FileData } from 'src/utils/fileUtils';
 import { LayoutTemplate, Search, TextCursorInput, TriangleAlert } from 'lucide-react';
-import Button from './Button';
+import Button from './general/Button';
 
 interface IFileItemProps {
   file: FileData;
@@ -19,7 +19,8 @@ interface FileDataWithProps extends FileData {
 }
 
 const FileItem = (props: IFileItemProps) => {
-  const { app, settings, allFiles } = useApp();
+  const { plugin } = useApp();
+  const { allFiles, settings, app } = plugin;
   const [upLinks, setUpLinks] = useState<FileDataWithProps[]>([]);
   const missingLink = !props.displayAsUnadded && upLinks.every((l) => !l.isParentFile);
 

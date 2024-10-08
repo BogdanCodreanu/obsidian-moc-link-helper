@@ -1,13 +1,15 @@
 import { App, TFile, WorkspaceLeaf } from 'obsidian';
-import MyPlugin, { MyPluginSettings } from '../main';
+import FileLinksHelperPlugin from '../main';
+import { PluginCustomSettings } from './pluginSettings';
+import { getFileFromLeaf } from '../utils/fileUtils';
 
 const ICON_BUTTON_CLASS = 'file-links-helper-parent-file-icon';
 
 export class IconButtonToOpenPlugin {
   constructor(
     private app: App,
-    private settings: MyPluginSettings,
-    private plugin: MyPlugin,
+    private settings: PluginCustomSettings,
+    private plugin: FileLinksHelperPlugin,
     private activateView: () => void,
   ) {}
 
@@ -86,6 +88,14 @@ export class IconButtonToOpenPlugin {
     iconButton.addEventListener('click', (event) => {
       event.stopPropagation(); // Prevent triggering file open
       this.handleIconClick();
+      const file = getFileFromLeaf(activeLeaf);
+      if (file) {
+        const fileData = this.plugin.allFiles[file.path];
+        if (fileData) {
+          this.app.workspace.trigger('file-links-helper:on-change-active-file', fileData);
+        }
+      }
+      // this.app.workspace.revealLeaf(activeLeaf);
     });
 
     // Add the button next to the title
@@ -102,20 +112,11 @@ export class IconButtonToOpenPlugin {
 
     if (recreate && this.settings.showIconToOpenPlugin) {
       this.app.workspace.iterateAllLeaves((leaf) => {
-        const file = IconButtonToOpenPlugin.GetFileFromLeaf(leaf);
+        const file = getFileFromLeaf(leaf);
         if (file) {
           this.onOpenFile(file);
         }
       });
     }
-  }
-
-  static GetFileFromLeaf(leaf: WorkspaceLeaf): TFile | undefined {
-    if (leaf.view.getViewType() === 'markdown') {
-      if ('file' in leaf.view && (leaf.view as any).file instanceof TFile) {
-        return (leaf.view as any).file;
-      }
-    }
-    return undefined;
   }
 }
