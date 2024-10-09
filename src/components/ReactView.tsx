@@ -1,5 +1,5 @@
 import { useApp } from '../hooks/useApp';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { getFilesFromText } from 'src/utils/text';
 import Button from './general/Button';
 import {
@@ -48,13 +48,7 @@ export const ReactView = () => {
   const [noMocNotesIncluded, setNoMocNotesIncluded] = useState<FileData[]>([]);
   const [mocNotesIncluded, setMocNotesIncluded] = useState<FileData[]>([]);
 
-  const [activeEditor, setActiveEditor] = useState<MarkdownFileInfo | undefined>(undefined);
   const useSelectedFiles = selectedFiles.length > 0;
-
-  const outFiles = activeFile
-    ? [...activeFile.outLinks].map((p) => allFiles[p]).filter(fileIsValid)
-    : [];
-  const childNoMOCNotes = outFiles.filter((f) => !f.isMoc);
 
   const inFiles = activeFile
     ? [...activeFile.inLinks].map((p) => allFiles[p]).filter(fileIsValid)
@@ -63,8 +57,9 @@ export const ReactView = () => {
     ? [...activeFile.upFiles].map((p) => allFiles[p]).filter(fileIsValid)
     : [];
 
-  const [outFilesWithoutParent] = useState<FileData[]>(
-    childNoMOCNotes.filter((f) => !fileHasUpTowardsFile(f, activeFile!)),
+  const noMocNotesWithoutLinkHere = useMemo<FileData[]>(
+    () => noMocNotesIncluded.filter((f) => !fileHasUpTowardsFile(f, activeFile!)),
+    [activeFile, noMocNotesIncluded],
   );
   const [inLinksNotInFile] = useState<FileData[]>(
     inFiles.filter(
@@ -81,6 +76,16 @@ export const ReactView = () => {
         onChangeActiveFile(file);
       }),
     );
+
+    view.registerEvent(
+      app.workspace.on('file-links-helper:cache-change', () => {
+        if (activeFile) {
+          console.log('cache change');
+          
+          getFiles(activeFile);
+        }
+      }),
+    );
   }, []);
 
   const onChangeActiveFile = (file: FileData) => {
@@ -93,16 +98,20 @@ export const ReactView = () => {
   };
 
   const getFiles = (mainFile: FileData | undefined) => {
-    const outFiles = mainFile ? [...mainFile.outLinks].map((p) => allFiles[p]).filter(fileIsValid) : [];
+    const outFiles = mainFile
+      ? [...mainFile.outLinks].map((p) => allFiles[p]).filter(fileIsValid)
+      : [];
+
+      
     // console.log('out files 1', [...file.outLinks]);
     // console.log('out files 2', [...file.outLinks].map((p) => allFiles[p]));
-    // console.log('out files 3', outFiles);
-    // console.log("all files", allFiles);
+    console.log('out files 3', outFiles);
+    console.log("all files", allFiles);
 
     setAllNotesIncluded(outFiles);
     setNoMocNotesIncluded(outFiles.filter((f) => !f.isMoc));
     setMocNotesIncluded(outFiles.filter((f) => f.isMoc));
-  }
+  };
 
   useEffect(() => {
     // if (reloadTime > 0) {
@@ -114,6 +123,8 @@ export const ReactView = () => {
 
   // INTERPRET ALL LINK POSITIONS
   useEffect(() => {
+    const activeEditor = app.workspace.activeEditor;
+
     if (!activeEditor || !activeEditor.editor || !activeFile || !activeFile.isMoc) {
       return;
     }
@@ -150,15 +161,17 @@ export const ReactView = () => {
     setLinesByFilePath(newLinesByFilePath);
 
     console.log('recreated root');
-  }, [activeFile, activeEditor]);
+  }, [activeFile]);
 
   // UPDATE ACTIVE FILE SELECTION
   useEffect(() => {
+    const activeEditor = app.workspace.activeEditor;
     if (!activeEditor || !activeEditor.editor || !activeFile || !activeFile.isMoc) {
       return;
     }
 
     const intervalId = setInterval(() => {
+      const activeEditor = app.workspace.activeEditor;
       if (!activeEditor || !activeEditor.editor || !activeFile) {
         return;
       }
@@ -186,9 +199,10 @@ export const ReactView = () => {
       }
     }, SELECTION_UPDATE_INTERVAL);
     return () => clearInterval(intervalId);
-  }, [activeFile, activeEditor]);
+  }, [activeFile]);
 
   const moveCursorToFile = (file: FileData) => {
+    const activeEditor = app.workspace.activeEditor;
     if (!activeEditor || !activeEditor.editor) {
       return;
     }
@@ -220,6 +234,7 @@ export const ReactView = () => {
   };
 
   const insertNoteAtCursorPosition = async (note: FileData) => {
+    const activeEditor = app.workspace.activeEditor;
     if (!activeEditor || !activeEditor.editor) {
       return;
     }
@@ -342,7 +357,7 @@ export const ReactView = () => {
                 addUpLinkToNotes(
                   useSelectedFiles
                     ? selectedFiles.filter((f) => ![...f.upFiles].includes(activeFile.path))
-                    : outFilesWithoutParent,
+                    : noMocNotesWithoutLinkHere,
                 )
               }
               icon={<Link size={16} />}
@@ -350,7 +365,7 @@ export const ReactView = () => {
               isDisabled={
                 useSelectedFiles
                   ? selectedFiles.every((f) => [...f.upFiles].some((p) => p === activeFile.path))
-                  : outFilesWithoutParent.length === 0
+                  : noMocNotesWithoutLinkHere.length === 0
               }
               className="text-green"
             />
@@ -367,7 +382,7 @@ export const ReactView = () => {
               isDisabled={
                 useSelectedFiles
                   ? !selectedFiles.some((f) => [...f.upFiles].some((p) => p === activeFile.path))
-                  : outFilesWithoutParent.length === allNotesIncluded.length
+                  : noMocNotesWithoutLinkHere.length === allNotesIncluded.length
               }
               className="text-orange"
             />
@@ -381,12 +396,14 @@ export const ReactView = () => {
               <Bird size={32} />
               <div className="mx-xs mb-s text-sm">No notes are referenced in here.</div>
             </div>
-          ) : outFilesWithoutParent.length > 0 ? (
+          ) : noMocNotesWithoutLinkHere.length > 0 ? (
             <div
               className={`flex w-full flex-row items-center gap-s text-orange transition-all ${useSelectedFiles ? 'scale-y-0 opacity-0' : ''}`}
             >
               <TriangleAlert size={16} />
-              <div className="text-sm">{outFilesWithoutParent.length} child notes not linked.</div>
+              <div className="text-sm">
+                {noMocNotesWithoutLinkHere.length} child notes not linked.
+              </div>
             </div>
           ) : (
             <div

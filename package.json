@@ -24,6 +24,7 @@
 		"esbuild": "0.17.3",
 		"esbuild-plugin-postcss2": "^0.1.2",
 		"obsidian": "latest",
+		"obsidian-dataview": "^0.5.67",
 		"postcss": "^8.4.41",
 		"prettier": "^3.3.3",
 		"prettier-plugin-tailwindcss": "^0.6.6",

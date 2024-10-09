@@ -75,5 +75,4 @@ module.exports = {
       pillBackground: 'var(--pill-background)',
     },
   },
-  prefix: 'file-links-helper-',
 };

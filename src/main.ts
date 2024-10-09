@@ -5,6 +5,7 @@ import { IconButtonToOpenPlugin } from './settings/iconButtonToOpenPlugin';
 import { FileData, getFileFromLeaf, initAllFiles } from './utils/fileUtils';
 import { CacheController } from './utils/cacheController';
 import { getCurrentOpenFile } from './utils/workspaceUtils';
+import { getAPI } from 'obsidian-dataview';
 
 export default class FileLinksHelperPlugin extends Plugin {
   public settings: PluginCustomSettings;
@@ -33,6 +34,24 @@ export default class FileLinksHelperPlugin extends Plugin {
     );
 
     this.app.workspace.onLayoutReady(this.onLayoutReady.bind(this));
+
+    const api = getAPI(this.app);
+    console.log('api', api.pages());
+    this.registerEvent(
+      this.app.metadataCache.on('dataview:index-ready', () => {
+        console.log('index ready', api.page('Main MOC.md'));
+      }),
+    );
+
+    this.registerEvent(
+      this.app.metadataCache.on('dataview:metadata-change', (type, file, oldPath) => {
+        console.log('metadata change', type, file, oldPath);
+        const page = api.page(file.path);
+
+        console.log("page", page);
+        
+      }),
+    );
   }
 
   private async onLayoutReady() {
@@ -115,7 +134,7 @@ export default class FileLinksHelperPlugin extends Plugin {
 
   private onMetadataCacheChange(file: TFile) {
     // this.iconButtonToOpenPlugin.onOpenFile(file, true);
-    console.log('Metadata cache changed', file);
+    this.app.workspace.trigger('file-links-helper:cache-change');
   }
 
   private onLeafChange(leaf: WorkspaceLeaf) {
