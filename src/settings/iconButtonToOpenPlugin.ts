@@ -1,7 +1,7 @@
 import { App, TFile, WorkspaceLeaf } from 'obsidian';
 import FileLinksHelperPlugin from '../main';
 import { PluginCustomSettings } from './pluginSettings';
-import { getFileFromLeaf } from '../utils/fileUtils';
+import { getFileFromLeaf } from '../utils/workspaceUtils';
 
 const ICON_BUTTON_CLASS = 'file-links-helper-parent-file-icon';
 
@@ -112,7 +112,7 @@ export class IconButtonToOpenPlugin {
 
     if (recreate && this.settings.showIconToOpenPlugin) {
       this.app.workspace.iterateAllLeaves((leaf) => {
-        const file = getFileFromLeaf(leaf);
+        const file = getFileFromLeaf(leaf, this.plugin);
         if (file) {
           this.onOpenFile(file);
         }

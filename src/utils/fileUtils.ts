@@ -1,6 +1,6 @@
-import { App, FrontMatterCache, TFile, WorkspaceLeaf } from 'obsidian';
-import { getFilesFromText } from './text';
+import { App, FrontMatterCache, TFile } from 'obsidian';
 import { PluginCustomSettings } from '../settings/pluginSettings';
+import { getAPI } from 'obsidian-dataview';
 
 export interface FileData extends TFile {
   frontmatter?: FrontMatterCache;
@@ -15,88 +15,43 @@ export interface FileData extends TFile {
   isInactiveLink?: boolean;
 }
 
-export const initAllFiles = (app: App, settings: PluginCustomSettings) => {
-  const files = app.vault.getFiles();
-  const filesByPath: Record<string, FileData> = {};
-
-
-  files.forEach((file) => {
-    filesByPath[file.path] = expandFile(file, app, settings);
-  });
-
-  Object.values(filesByPath).forEach((file) =>
-    secondExpandFile(file, filesByPath, settings),
-  );
-
-
-  files.forEach((file) => {
-    const outLinks = getOutFiles(file.path, app, filesByPath);
-
-    outLinks.forEach((f) => filesByPath[file.path].outLinks.add(f.path));
-
-    outLinks.forEach((outFile) => {
-      filesByPath[outFile.path].inLinks.add(filesByPath[file.path].path);
-    });
-
-    filesByPath[file.path].upFiles.forEach((f) => {
-      filesByPath[f].inLinks.add(file.path);
-      // filesByPath[f].outLinks.delete(file.path);
-    });
-  });
-
-  console.log("Init all files", filesByPath["Main MOC.md"]);
-  
-  return filesByPath;
+export interface DvLink {
+  path: string;
 }
 
-export const expandFile = (file: TFile, app: App, settings: PluginCustomSettings): FileData => {
-  const cache = app.metadataCache.getFileCache(file);
-  const frontmatter = cache?.frontmatter;
-  const tags = [...(cache?.tags?.map((t) => t.tag) ?? []), ...(frontmatter?.tags ?? [])];
-  const name = file.name;
-  const nameWithoutExtension = name.replace(/\.[^/.]+$/, '');
+export interface DvPage {
+  tags: string[];
+  up: DvLink[];
+  file: {
+    path: string;
+    name: string;
+    inlinks: any;
+    outlinks: any;
+  }
+  isMoc: boolean;
+  upFiles: DvPage[];
+}
 
-  return {
-    ...file,
-    uniqueLinkedName: nameWithoutExtension,
-    frontmatter,
-    nameWithoutExtension,
-    outLinks: new Set<string>(),
-    inLinks: new Set<string>(),
-    unresolvedLinks: (file as FileData).unresolvedLinks ?? [],
-    tags: frontmatter?.tags ?? [],
-    upFiles: new Set<string>(),
-    isMoc: tags.includes(settings.parentTag) ?? false,
-  };
-};
+export const expandPage = (page: DvPage, settings: PluginCustomSettings) => {
+  if (!page) {
+    return;
+  }
 
-export const secondExpandFile = (
-  file: FileData,
-  allFiles: Record<string, FileData>,
-  settings: PluginCustomSettings,
-) => {
-  file.uniqueLinkedName = generateUniqueLinkedName(file, allFiles);
-  getUpFiles(file, allFiles, settings)
-    .map((f) => f.path)
-    .forEach((f) => file.upFiles.add(f));
+  const dv = getAPI();
+  if (page.tags) {
+    page.isMoc = page.tags.includes(settings.parentTag);
+  }
+  console.log('Expanding page', page);
 
-  // const upFilesNotInOutlinks = [...file.upFiles].filter((f) => ![...file.outLinks].includes(f));
+  if (page.up) {
+    console.log('Expanding up', page.up);
+    
+    page.upFiles = page.up.map((u) => dv.page(u.path));
 
-  // upFilesNotInOutlinks.forEach((f) => file.outLinks.add(f));
-};
+    console.log('Expanded up', page.upFiles);
+  }
+}
 
-export const fileIsValid = (file: FileData): boolean => {
-  return !!file && !!file.path;
-};
-
-export const getUpFiles = (
-  file: FileData,
-  allFiles: Record<string, FileData>,
-  settings: PluginCustomSettings,
-): FileData[] => {
-  const upFiles = getFilesFromText(file.frontmatter?.[settings.upPropName] ?? [], allFiles);
-  return upFiles;
-};
 
 export const fromFilenameToFile = (
   filename: string,
@@ -106,41 +61,6 @@ export const fromFilenameToFile = (
 
   const file = Object.values(allFiles).find((f) => f.path.endsWith(wantedEndingString));
   return file || null;
-};
-
-export const getInFiles = (
-  filePath: string,
-  app: App,
-  allFiles: Record<string, FileData>,
-): FileData[] => {
-  const inLinks = Object.keys(app.metadataCache.resolvedLinks)
-    .filter((path) => Object.keys(app.metadataCache.resolvedLinks[path] ?? []).includes(filePath))
-    .map((l) => allFiles[l])
-    .filter((f) => f.path !== filePath);
-
-  return inLinks;
-};
-
-export const getOutFiles = (
-  filePath: string,
-  app: App,
-  allFiles: Record<string, FileData>,
-): FileData[] => {
-  const links = app.metadataCache.resolvedLinks[filePath] ?? [];
-
-  const outLinks =
-    Object.keys(links)
-      .filter((link) => {
-        if (links[link] <= 1 && allFiles[filePath].upFiles.has(link)) {
-          return false;
-        }
-        return true;
-      })
-      .map((l) => allFiles[l])
-      .filter((f) => !!f)
-      .filter((f) => f.path !== filePath) ?? [];
-
-  return outLinks;
 };
 
 export const addUpLinkToNote = async (
@@ -240,12 +160,3 @@ export const parentFileHasOutTowardsFile = (
 };
 
 
-
-export const getFileFromLeaf = (leaf: WorkspaceLeaf): TFile | undefined  =>{
-  if (leaf.view.getViewType() === 'markdown') {
-    if ('file' in leaf.view && (leaf.view as any).file instanceof TFile) {
-      return (leaf.view as any).file;
-    }
-  }
-  return undefined;
-}

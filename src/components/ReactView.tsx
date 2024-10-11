@@ -6,7 +6,6 @@ import {
   addUpLinkToNote,
   FileData,
   fileHasUpTowardsFile,
-  fileIsValid,
   generateMarkdownLink,
   parentFileHasOutTowardsFile,
   removeUpLinkFromNote,
@@ -14,7 +13,6 @@ import {
 import {
   Bird,
   Check,
-  FolderSync,
   LayoutTemplate,
   Link,
   Notebook,
@@ -24,7 +22,6 @@ import {
   TriangleAlert,
   Unlink,
 } from 'lucide-react';
-import { MarkdownFileInfo } from 'obsidian';
 import Description from './general/Description';
 import StatusText from './general/StatusText';
 import Header from './general/Header';
@@ -36,7 +33,7 @@ const REFRESH_ANIMATION_DURATION = 'duration-[1000ms]';
 
 export const ReactView = () => {
   const { plugin, view } = useApp();
-  const { app, settings, allFiles } = plugin;
+  const { app, settings } = plugin;
 
   const [delayToStartRefreshAnimation, setDelayToStartRefreshAnimation] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<FileData[]>([]);
@@ -78,7 +75,7 @@ export const ReactView = () => {
     );
 
     view.registerEvent(
-      app.workspace.on('file-links-helper:cache-change', () => {
+      app.metadataCache.on('dataview:metadata-change', (status, file, oldPath) => {
         if (activeFile) {
           console.log('cache change');
           
@@ -99,7 +96,7 @@ export const ReactView = () => {
 
   const getFiles = (mainFile: FileData | undefined) => {
     const outFiles = mainFile
-      ? [...mainFile.outLinks].map((p) => allFiles[p]).filter(fileIsValid)
+      ? [...mainFile.outLinks].map((p) => allFiles[p])
       : [];
 
       
@@ -257,9 +254,6 @@ export const ReactView = () => {
     await Promise.all(notes.map((n) => insertNoteAtCursorPosition(n)));
   };
 
-  const refreshLinks = async () => {
-    app.workspace.trigger('file-links-helper:on-reinit-all-files');
-  };
 
   const loadingBar = (
     <div className="w-sm mt-xs h-1.5 rounded-full border-1 border-text-accent">
@@ -433,7 +427,6 @@ export const ReactView = () => {
             {activeFile.isMoc ? <LayoutTemplate /> : <NotebookText />}
             <div>{activeFile?.nameWithoutExtension}</div>
           </div>
-          <Button onClick={refreshLinks} ariaLabel="Refresh links" icon={<FolderSync />} />
         </div>
 
         {loadingBar}

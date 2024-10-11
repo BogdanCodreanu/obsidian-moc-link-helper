@@ -1,17 +1,13 @@
-import { Notice, Plugin, TFile, WorkspaceLeaf } from 'obsidian';
+import { Plugin, WorkspaceLeaf } from 'obsidian';
 import LinksHelperSideView, { FILE_LINKS_HELPER_VIEW_ID } from './views/LinksHelperSideView';
 import { DEFAULT_SETTINGS, PluginCustomSettings, SettingTab } from './settings/pluginSettings';
 import { IconButtonToOpenPlugin } from './settings/iconButtonToOpenPlugin';
-import { FileData, getFileFromLeaf, initAllFiles } from './utils/fileUtils';
-import { CacheController } from './utils/cacheController';
-import { getCurrentOpenFile } from './utils/workspaceUtils';
-import { getAPI } from 'obsidian-dataview';
+import { getFileFromLeaf } from './utils/workspaceUtils';
+// import { getAPI, isPluginEnabled } from 'obsidian-dataview';
 
 export default class FileLinksHelperPlugin extends Plugin {
   public settings: PluginCustomSettings;
-  public allFiles: Record<string, FileData> = {};
   private iconButtonToOpenPlugin: IconButtonToOpenPlugin;
-  private cacheController: CacheController;
 
   async onload() {
     this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
@@ -21,7 +17,6 @@ export default class FileLinksHelperPlugin extends Plugin {
       this,
       this.activateView.bind(this),
     );
-    this.cacheController = new CacheController(this);
 
     this.registerView(FILE_LINKS_HELPER_VIEW_ID, (leaf) => new LinksHelperSideView(leaf, this));
 
@@ -35,22 +30,14 @@ export default class FileLinksHelperPlugin extends Plugin {
 
     this.app.workspace.onLayoutReady(this.onLayoutReady.bind(this));
 
-    const api = getAPI(this.app);
-    console.log('api', api.pages());
     this.registerEvent(
       this.app.metadataCache.on('dataview:index-ready', () => {
-        console.log('index ready', api.page('Main MOC.md'));
+        console.log('index ready');
       }),
     );
 
     this.registerEvent(
-      this.app.metadataCache.on('dataview:metadata-change', (type, file, oldPath) => {
-        console.log('metadata change', type, file, oldPath);
-        const page = api.page(file.path);
-
-        console.log("page", page);
-        
-      }),
+      this.app.metadataCache.on('dataview:metadata-change', (type, file, oldPath) => {}),
     );
   }
 
@@ -60,43 +47,17 @@ export default class FileLinksHelperPlugin extends Plugin {
     // wait 1 second to make sure the files are loaded
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    await this.startInitialLoad();
-
     this.registerEvent(this.app.workspace.on('active-leaf-change', this.onLeafChange.bind(this)));
-    this.registerEvent(this.app.metadataCache.on('changed', this.onMetadataCacheChange.bind(this)));
 
-    this.app.workspace.trigger('file-links-helper:on-reinit-all-files');
-
-    const currentFile = getCurrentOpenFile(this.app, this.allFiles);
-    if (currentFile) {
-      this.app.workspace.trigger('file-links-helper:on-change-active-file', currentFile);
-    }
+    this.addCommand({
+      id: 'file-links-helper:open-view',
+      name: 'Open File Links Helper View',
+      callback: this.activateView.bind(this),
+    })
   }
 
   onunload() {
     this.iconButtonToOpenPlugin.removeAllIcons(false);
-  }
-
-  private async startInitialLoad() {
-    let allFiles: Record<string, FileData> = {};
-    const maxTries = 10;
-    const waitTime = 1000;
-
-    for (let i = 0; i < maxTries; i++) {
-      allFiles = initAllFiles(this.app, this.settings);
-
-      if (Object.keys(allFiles).length > 0) {
-        this.allFiles = allFiles;
-        return allFiles;
-      }
-
-      await new Promise((resolve) => setTimeout(resolve, waitTime));
-    }
-
-    // warn user that the plugin could not load the files
-    new Notice(
-      "File Links Helper: Could not load files. Please use the reinitialize button in the plugin's view.",
-    );
   }
 
   async saveSettings() {
@@ -132,21 +93,12 @@ export default class FileLinksHelperPlugin extends Plugin {
     workspace.revealLeaf(leaf!);
   }
 
-  private onMetadataCacheChange(file: TFile) {
-    // this.iconButtonToOpenPlugin.onOpenFile(file, true);
-    this.app.workspace.trigger('file-links-helper:cache-change');
-  }
-
   private onLeafChange(leaf: WorkspaceLeaf) {
     if (!leaf) return;
-    const file = getFileFromLeaf(leaf);
+    const file = getFileFromLeaf(leaf, this);
 
     if (file) {
-      this.iconButtonToOpenPlugin.onOpenFile(file);
-      const fileData = this.allFiles[file.path];
-      if (fileData) {
-        this.app.workspace.trigger('file-links-helper:on-change-active-file', fileData);
-      }
+      this.app.workspace.trigger('file-links-helper:on-change-active-file', file);
     }
   }
 }

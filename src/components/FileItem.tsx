@@ -1,66 +1,68 @@
 import { useApp } from 'src/hooks/useApp';
 import { useEffect, useState } from 'react';
-import { FileData } from 'src/utils/fileUtils';
 import { LayoutTemplate, Search, TextCursorInput, TriangleAlert } from 'lucide-react';
 import Button from './general/Button';
+import { DvPage } from '../utils/fileUtils';
 
 interface IFileItemProps {
-  file: FileData;
-  parentFile: FileData;
+  page: DvPage;
+  parentPage: DvPage;
   isSelected: boolean;
   displayAsUnadded?: boolean;
-  addAtCursor?: (note: FileData) => void;
+  addAtCursor?: (note: DvPage) => void;
   titleOnly?: boolean;
-  moveCursorToFile?: (file: FileData) => void;
+  moveCursorToFile?: (file: DvPage) => void;
 }
 
-interface FileDataWithProps extends FileData {
+interface FileDataWithProps extends DvPage {
   isParentFile: boolean;
 }
 
 const FileItem = (props: IFileItemProps) => {
   const { plugin } = useApp();
-  const { allFiles, settings, app } = plugin;
+  const { settings, app } = plugin;
   const [upLinks, setUpLinks] = useState<FileDataWithProps[]>([]);
   const missingLink = !props.displayAsUnadded && upLinks.every((l) => !l.isParentFile);
 
   useEffect(() => {
     setUpLinks(
-      [...props.file.upFiles].map((path) => ({
-        ...allFiles[path],
-        isParentFile: props.parentFile.path === path,
+      [...props.page.upFiles].map((page) => ({
+        ...page,
+        isParentFile: props.parentPage.file.path === page.file.path,
       })),
     );
-  }, [props.file, props.parentFile]);
+  }, [props.page, props.parentPage]);
 
   const onClickFile = (
     event: React.MouseEvent<HTMLDivElement, MouseEvent>,
-    file: FileDataWithProps | FileData,
+    page: FileDataWithProps | DvPage,
     newLeaf: boolean,
   ) => {
     event.preventDefault();
-    if ((file as FileDataWithProps).isParentFile) {
+    if ((page as FileDataWithProps).isParentFile) {
       return;
     }
 
-    app.workspace.openLinkText(file.path, file.path, newLeaf);
+    app.workspace.openLinkText(page.file.path, page.file.path, newLeaf);
   };
+
+  return (<div>{props.page.file.name}</div>)
 
   const title = (
     <div className="flex w-full flex-row justify-between gap-s">
       <div
         className={`flex cursor-pointer flex-row gap-xs text-sm font-bold text-text-normal hover:text-text-accent hover:underline ${props.displayAsUnadded ? 'text-xs font-normal' : ''}`}
-        onClick={(ev) => onClickFile(ev, props.file, false)}
-        onAuxClick={(ev) => onClickFile(ev, props.file, true)}
+        onClick={(ev) => onClickFile(ev, props.page, false)}
+        onAuxClick={(ev) => onClickFile(ev, props.page, true)}
       >
-        {props.file.isMoc && <LayoutTemplate size={16} />}
-        {props.file.uniqueLinkedName}
+        {props.page.isMoc && <LayoutTemplate size={16} />}
+        {props.page.file.name}
       </div>
       {props.moveCursorToFile && (
         <div className="flex-grow-0">
           <Button
             ariaLabel="Scroll to line"
-            onClick={() => props.moveCursorToFile?.(props.file)}
+            onClick={() => props.moveCursorToFile?.(props.page)}
             icon={<Search size={16} />}
             className="h-[24px] w-[24px] p-s"
           />
@@ -80,14 +82,14 @@ const FileItem = (props: IFileItemProps) => {
   return (
     <div className="flex flex-row items-center gap-xs">
       <div
-        className={`flex w-full flex-col flex-wrap rounded-lg border-base-60 bg-base-5 p-s py-xs transition-all ${props.isSelected ? 'rounded-2xl border-2 border-text-accent' : 'border-1'} ${props.displayAsUnadded || missingLink ? 'border-2 border-orange' : ''} ${props.file.isMoc && !props.displayAsUnadded ? 'border-2 border-text-accent' : ''}`}
+        className={`flex w-full flex-col flex-wrap rounded-lg border-base-60 bg-base-5 p-s py-xs transition-all ${props.isSelected ? 'rounded-2xl border-2 border-text-accent' : 'border-1'} ${props.displayAsUnadded || missingLink ? 'border-2 border-orange' : ''} ${props.page.isMoc && !props.displayAsUnadded ? 'border-2 border-text-accent' : ''}`}
       >
         <div className="flex flex-row items-center justify-between">
           {title}
 
           {props.displayAsUnadded && (
             <Button
-              onClick={() => props.addAtCursor?.(props.file)}
+              onClick={() => props.addAtCursor?.(props.page)}
               icon={<TextCursorInput size={14} />}
               className="h-[24px] w-[24px] p-s text-green"
             />
@@ -101,12 +103,12 @@ const FileItem = (props: IFileItemProps) => {
               <div className="flex flex-row flex-wrap gap-xs">
                 {upLinks.map((file, i, all) => (
                   <div
-                    key={file.path}
+                    key={file.file.path}
                     onClick={(event) => onClickFile(event, file, false)}
                     onAuxClick={(event) => onClickFile(event, file, true)}
                     className={`cursor-pointer text-xs hover:text-text-accent hover:underline ${file.isParentFile ? 'font-bold' : `text-base-60`}`}
                   >
-                    {file.uniqueLinkedName + (i < all.length - 1 ? ',' : '')}
+                    {file.file.name + (i < all.length - 1 ? ',' : '')}
                   </div>
                 ))}
               </div>

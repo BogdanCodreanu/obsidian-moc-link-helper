@@ -27,7 +27,7 @@ const ChildNoteView = (props: IChildNoteViewProps) => {
             {props.upFiles.map((file, index) => (
               <FileItem
                 key={file?.path ?? index}
-                file={file}
+                page={file}
                 parentFile={props.activeFile}
                 isSelected={false}
                 titleOnly
