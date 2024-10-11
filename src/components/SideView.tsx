@@ -29,7 +29,7 @@ export const SideView = () => {
 
     console.log('Active file outlinks', activeFile.file.outlinks);
     // remove up links if only 1 outlink
-    
+
     const outPages = [...new Set(activeFile.file.outlinks.map((l: DvLink) => l.path))]
       .map((p: string) => dv.page(p))
       .filter((p: DvPage) => !!p);
@@ -86,64 +86,69 @@ export const SideView = () => {
   }
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 top-[12px] flex flex-col gap-s p-m">
-      <PageTitle page={activeFile} />
+    <div className="file-links-helper">
+      <div className="fixed bottom-0 left-0 right-0 top-[12px] flex flex-col gap-s p-m">
+        <PageTitle page={activeFile} />
 
-      <ToggleButtonGroup
-        options={[
-          { label: 'Notes Included', value: 'OUTLINKS' },
-          { label: 'Missing Notes', value: 'INLINKS' },
-        ]}
-        selectedOption={screen}
-        onOptionSelected={onScreenChange}
-      />
+        <ToggleButtonGroup
+          options={[
+            { label: 'Notes Included', value: 'OUTLINKS' },
+            { label: 'Missing Notes', value: 'INLINKS' },
+          ]}
+          selectedOption={screen}
+          onOptionSelected={onScreenChange}
+        />
 
-      {screen === 'OUTLINKS' ? (
-        <div className="flex flex-col gap-xs p-s">
-          <Description
-            text={
-              <div>
-                Notes included in this{' '}
-                <span className="font-semibold text-text-accent">{plugin.settings.parentTag}</span>{' '}
-                parent note. You can quickly modify their{' '}
-                <span className="font-semibold text-text-accent">{plugin.settings.upPropName}</span>{' '}
-                link in relation to this parent note. You can also
-                <span className="mx-xs inline-block">
-                  <TextSelect size={15} />
-                </span>
-                select text to choose specific notes.
-              </div>
-            }
-          />
+        {screen === 'OUTLINKS' ? (
+          <div className="flex flex-col gap-xs p-s">
+            <Description
+              text={
+                <div>
+                  Notes included in this{' '}
+                  <span className="font-semibold text-text-accent">
+                    {plugin.settings.parentTag}
+                  </span>{' '}
+                  parent note. You can quickly modify their{' '}
+                  <span className="font-semibold text-text-accent">
+                    {plugin.settings.upPropName}
+                  </span>{' '}
+                  link in relation to this parent note. You can also
+                  <span className="mx-xs inline-block">
+                    <TextSelect size={15} />
+                  </span>
+                  select text to choose specific notes.
+                </div>
+              }
+            />
 
-          <ToggleButtonGroup
-            options={[
-              { label: 'All', value: 'All' },
-              { label: 'Notes', value: 'Notes' },
-              { label: plugin.settings.parentTag, value: 'MOC' },
-            ]}
-            selectedOption={outNotesView}
-            onOptionSelected={onOutNotesViewChange}
-            mergeBottom
-          />
+            <ToggleButtonGroup
+              options={[
+                { label: 'All', value: 'All' },
+                { label: 'Notes', value: 'Notes' },
+                { label: plugin.settings.parentTag, value: 'MOC' },
+              ]}
+              selectedOption={outNotesView}
+              onOptionSelected={onOutNotesViewChange}
+              mergeBottom
+            />
 
-          <ListOfItems
-            pages={
-              outNotesView === 'All'
-                ? allOutNotes
-                : outNotesView === 'Notes'
-                  ? childOutNotes
-                  : mocOutNotes
-            }
-            parentPage={activeFile}
-            type="SIMPLE"
-          />
-        </div>
-      ) : screen === 'INLINKS' ? (
-        <></>
-      ) : null}
+            <ListOfItems
+              pages={
+                outNotesView === 'All'
+                  ? allOutNotes
+                  : outNotesView === 'Notes'
+                    ? childOutNotes
+                    : mocOutNotes
+              }
+              parentPage={activeFile}
+              type="SIMPLE"
+            />
+          </div>
+        ) : screen === 'INLINKS' ? (
+          <></>
+        ) : null}
 
-      {/* {activeFile.isMoc ? (
+        {/* {activeFile.isMoc ? (
         <>
           {inLinksNotInFile.length > 0 && inLinksNotInFileComponent}
 
@@ -152,6 +157,7 @@ export const SideView = () => {
       ) : (
         <ChildNoteView settings={settings} upFiles={upFiles} activeFile={activeFile} />
       )} */}
+      </div>
     </div>
   );
 };
