@@ -96,12 +96,14 @@ const FileItem = (props: IFileItemProps) => {
         {!props.displayAsUnadded && (
           <div className="flex flex-row items-center gap-xs">
             <div className="rounded-sm text-xs text-text-accent">{settings.upPropName}</div>
-            {missingLink && <TriangleAlert className="text-orange" size={16} />}
+            {missingLink && !props.page.isMoc && (
+              <TriangleAlert className="text-orange" size={16} />
+            )}
             {upLinks.length > 0 ? (
               <div className="flex flex-row flex-wrap gap-xs">
                 {upLinks.map((file, i, all) => (
                   <div
-                    key={file.file.path}
+                    key={file.file.path + i}
                     onClick={(event) => onClickFile(event, file, false)}
                     onAuxClick={(event) => onClickFile(event, file, true)}
                     className={`cursor-pointer text-xs hover:text-text-accent hover:underline ${file.isParentFile ? 'font-bold' : `text-base-60`}`}

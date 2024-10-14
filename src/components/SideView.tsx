@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useApp } from '../hooks/useApp';
-import { DvPage, expandPage } from '../utils/fileUtils';
+import { addUpLinkToNote, DvPage, expandPage, removeUpLinkFromNote } from '../utils/fileUtils';
 import PageTitle from './general/PageTitle';
 import NoFileSelectedScreen from './general/NoFileSelectedScreen';
 import ToggleButtonGroup from './general/ToggleButtonGroup';
@@ -9,6 +9,7 @@ import { getCurrentOpenFile } from '../utils/workspaceUtils';
 import { TextSelect } from 'lucide-react';
 import Description from './general/Description';
 import ListOfItems from './ListOfItems';
+import LinkButtons from './general/LinkButtons';
 
 type SCREENS = 'INLINKS' | 'OUTLINKS';
 type OutNotesView = 'All' | 'Notes' | 'MOC';
@@ -24,7 +25,6 @@ export const SideView = () => {
     if (!activeFile) {
       return [];
     }
-    console.log('Active file', activeFile);
     return activeFile.outPages;
   }, [activeFile]);
 
@@ -36,10 +36,14 @@ export const SideView = () => {
     return allOutNotes.filter((p) => p.isMoc);
   }, [allOutNotes]);
 
+  const shownNotes =
+    outNotesView === 'All' ? allOutNotes : outNotesView === 'Notes' ? childOutNotes : mocOutNotes;
+
   const subscribeToEvents = debounce(() => {
     view.registerEvent(
       plugin.app.workspace.on('file-links-helper:on-change-active-file', (file: DvPage) => {
         setActiveFile(file);
+        console.log("Set active file", file);
       }),
     );
 
@@ -81,13 +85,32 @@ export const SideView = () => {
     setOutNotesView(view);
   };
 
+  const addUpLinkToNotes = async (notes: DvPage[]) => {
+    if (!activeFile) {
+      return;
+    }
+    const allFiles = plugin.app.vault.getAllLoadedFiles();
+    await Promise.all(
+      notes.map((n) => addUpLinkToNote(n, activeFile, plugin.app, plugin.settings, allFiles)),
+    );
+  };
+
+  const removeUpLinkFromNotes = async (notes: DvPage[]) => {
+    if (!activeFile) {
+      return;
+    }
+    await Promise.all(
+      notes.map((n) => removeUpLinkFromNote(n, activeFile, plugin.app, plugin.settings)),
+    );
+  };
+
   if (!activeFile) {
     return <NoFileSelectedScreen />;
   }
 
   return (
     <div className="file-links-helper">
-      <div className="fixed bottom-0 left-0 right-0 top-[12px] flex flex-col gap-s p-m overflow-auto">
+      <div className="fixed bottom-0 left-0 right-0 top-[12px] flex flex-col gap-s overflow-auto p-m">
         <PageTitle page={activeFile} />
 
         <ToggleButtonGroup
@@ -121,7 +144,7 @@ export const SideView = () => {
               }
             />
 
-            <div className='overflow-auto'>
+            <div className="overflow-auto">
               <ToggleButtonGroup
                 options={[
                   { label: 'All', value: 'All' },
@@ -133,17 +156,15 @@ export const SideView = () => {
                 mergeBottom
               />
 
-              <ListOfItems
-                pages={
-                  outNotesView === 'All'
-                    ? allOutNotes
-                    : outNotesView === 'Notes'
-                      ? childOutNotes
-                      : mocOutNotes
-                }
+              <LinkButtons
+                pages={shownNotes}
                 parentPage={activeFile}
-                type="SIMPLE"
+                useSelectedFiles={false}
+                addUpLinkToNotes={addUpLinkToNotes}
+                removeUpLinkFromNotes={removeUpLinkFromNotes}
               />
+
+              <ListOfItems pages={shownNotes} parentPage={activeFile} type="SIMPLE" />
             </div>
           </div>
         ) : screen === 'INLINKS' ? (

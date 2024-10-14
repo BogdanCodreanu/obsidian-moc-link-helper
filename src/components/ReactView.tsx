@@ -220,15 +220,6 @@ export const ReactView = () => {
     activeEditor.editor.focus();
   };
 
-  const addUpLinkToNotes = async (notes: FileData[]) => {
-    await Promise.all(notes.map((n) => addUpLinkToNote(n, activeFile!, app, allFiles, settings)));
-  };
-
-  const removeUpLinkFromNotes = async (notes: FileData[]) => {
-    await Promise.all(
-      notes.map((n) => removeUpLinkFromNote(n, activeFile!, app, allFiles, settings)),
-    );
-  };
 
   const insertNoteAtCursorPosition = async (note: FileData) => {
     const activeEditor = app.workspace.activeEditor;
@@ -341,47 +332,6 @@ export const ReactView = () => {
       <div
         className={`mb-xs flex flex-row-reverse items-end gap-xs ${useSelectedFiles ? 'mb-xl' : ''}`}
       >
-        {/* BUTTONS */}
-        {allNotesIncluded.length > 0 ? (
-          <div
-            className={`flex w-full flex-row flex-wrap justify-end gap-s ${useSelectedFiles ? 'justify-evenly' : ''}`}
-          >
-            <Button
-              onClick={() =>
-                addUpLinkToNotes(
-                  useSelectedFiles
-                    ? selectedFiles.filter((f) => ![...f.upFiles].includes(activeFile.path))
-                    : noMocNotesWithoutLinkHere,
-                )
-              }
-              icon={<Link size={16} />}
-              label={useSelectedFiles ? 'Link selected files' : 'Link all'}
-              isDisabled={
-                useSelectedFiles
-                  ? selectedFiles.every((f) => [...f.upFiles].some((p) => p === activeFile.path))
-                  : noMocNotesWithoutLinkHere.length === 0
-              }
-              className="text-green"
-            />
-            <Button
-              onClick={() =>
-                removeUpLinkFromNotes(
-                  useSelectedFiles
-                    ? selectedFiles.filter((f) => [...f.upFiles].includes(activeFile.path))
-                    : allNotesIncluded,
-                )
-              }
-              icon={<Unlink size={16} />}
-              label={useSelectedFiles ? 'Unlink selected files' : 'Unlink all'}
-              isDisabled={
-                useSelectedFiles
-                  ? !selectedFiles.some((f) => [...f.upFiles].some((p) => p === activeFile.path))
-                  : noMocNotesWithoutLinkHere.length === allNotesIncluded.length
-              }
-              className="text-orange"
-            />
-          </div>
-        ) : null}
 
         {/* NOTES LINK STATUS */}
         {!useSelectedFiles &&

@@ -1,4 +1,4 @@
-import { App, FrontMatterCache, TFile } from 'obsidian';
+import { App, FrontMatterCache, TAbstractFile, TFile } from 'obsidian';
 import { PluginCustomSettings } from '../settings/pluginSettings';
 import { getAPI } from 'obsidian-dataview';
 
@@ -90,31 +90,39 @@ export const fromFilenameToFile = (
 };
 
 export const addUpLinkToNote = async (
-  childNote: FileData,
-  parentNote: FileData,
+  childPage: DvPage,
+  parentPage: DvPage,
   app: App,
-  allFiles: Record<string, FileData>,
   settings: PluginCustomSettings,
+  allFiles: TAbstractFile[],
 ) => {
-  if (![...childNote.upFiles].includes(parentNote.path)) {
-    await app.fileManager.processFrontMatter(childNote, (fm) => {
+  if (!childPage.upFiles.map((f) => f.file.path).includes(parentPage.file.path)) {
+    const file = app.vault.getFileByPath(childPage.file.path);
+    if (!file) {
+      return;
+    }
+
+    await app.fileManager.processFrontMatter(file, (fm) => {
       if (!fm[settings.upPropName]) {
         fm[settings.upPropName] = [];
       }
-      fm[settings.upPropName].push(generateMarkdownLink(parentNote, allFiles));
+      fm[settings.upPropName].push(generateMarkdownLink(parentPage, allFiles));
       return fm;
     });
   }
 };
 
 export const removeUpLinkFromNote = async (
-  childNote: FileData,
-  parentNote: FileData,
+  childPage: DvPage,
+  parentPage: DvPage,
   app: App,
-  allFiles: Record<string, FileData>,
   settings: PluginCustomSettings,
 ) => {
-  await app.fileManager.processFrontMatter(childNote, (fm) => {
+  const file = app.vault.getFileByPath(childPage.file.path);
+  if (!file) {
+    return;
+  }
+  await app.fileManager.processFrontMatter(file, (fm) => {
     if (!fm[settings.upPropName]) {
       return fm;
     }
@@ -124,7 +132,7 @@ export const removeUpLinkFromNote = async (
     }
 
     if (Array.isArray(fm[settings.upPropName])) {
-      const parentPathWithoutExtension = parentNote.path.replace(/\.[^/.]+$/, '');
+      const parentPathWithoutExtension = parentPage.file.path.replace(/\.[^/.]+$/, '');
       fm[settings.upPropName] = (fm[settings.upPropName] as string[]).filter((u) => {
         const uWithoutBrackets = u.replace('[[', '').replace(']]', '');
         return !parentPathWithoutExtension.endsWith(uWithoutBrackets);
@@ -136,21 +144,16 @@ export const removeUpLinkFromNote = async (
   });
 };
 
-export const generateMarkdownLink = (
-  file: FileData,
-  allFiles: Record<string, FileData>,
-): string => {
-  return `[[${generateUniqueLinkedName(file, allFiles)}]]`;
+export const generateMarkdownLink = (page: DvPage, allFiles: TAbstractFile[]): string => {
+  return `[[${generateUniqueLinkedName(page, allFiles)}]]`;
 };
 
-export const generateUniqueLinkedName = (
-  file: FileData,
-  allFiles: Record<string, FileData>,
-): string => {
-  const filePathParts = file.path.split('/');
+export const generateUniqueLinkedName = (page: DvPage, allFiles: TAbstractFile[]): string => {
+  const allPaths = allFiles.map((f) => f.path);
+  const filePathParts = page.file.path.split('/');
 
   let lastPart = filePathParts.pop();
-  let pathsEndingSame = Object.keys(allFiles).filter((f) => f.endsWith(lastPart!));
+  let pathsEndingSame = allPaths.filter((f) => f.endsWith(lastPart!));
 
   while (lastPart && pathsEndingSame.length > 1) {
     if (pathsEndingSame.length === 1) {
@@ -159,15 +162,15 @@ export const generateUniqueLinkedName = (
     }
 
     lastPart = `${filePathParts.pop()}/${lastPart}`;
-    pathsEndingSame = Object.keys(allFiles).filter((f) => f.endsWith(lastPart!));
+    pathsEndingSame = allPaths.filter((f) => f.endsWith(lastPart!));
   }
 
   if (pathsEndingSame.length === 1) {
-    const withoutExtension = (lastPart ?? file.path).replace(/\.[^/.]+$/, '');
+    const withoutExtension = (lastPart ?? page.file.path).replace(/\.[^/.]+$/, '');
     return withoutExtension;
   }
 
-  const pathWithoutExtension = file.path.replace(/\.[^/.]+$/, '');
+  const pathWithoutExtension = page.file.path.replace(/\.[^/.]+$/, '');
   return pathWithoutExtension;
 };
 

@@ -1,12 +1,17 @@
-import { Plugin, TFile, WorkspaceLeaf } from 'obsidian';
+import { debounce, Plugin, TFile, WorkspaceLeaf } from 'obsidian';
 import LinksHelperSideView, { FILE_LINKS_HELPER_VIEW_ID } from './views/LinksHelperSideView';
 import { DEFAULT_SETTINGS, PluginCustomSettings, SettingTab } from './settings/pluginSettings';
 import { IconButtonToOpenPlugin } from './settings/iconButtonToOpenPlugin';
 import { getCurrentOpenFile, getFileFromLeaf } from './utils/workspaceUtils';
+import { DvPage } from './utils/fileUtils';
 
 export default class FileLinksHelperPlugin extends Plugin {
   public settings: PluginCustomSettings;
   private iconButtonToOpenPlugin: IconButtonToOpenPlugin;
+  private triggerChange = debounce((page: DvPage) => {
+    this.app.workspace.trigger('file-links-helper:on-change-active-file', page);
+    console.log("METADATA CHANGED");
+  }, 200);
 
   async onload() {
     this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
@@ -95,7 +100,7 @@ export default class FileLinksHelperPlugin extends Plugin {
   private onLeafChange(leaf: WorkspaceLeaf) {
     if (!leaf) return;
     const page = getFileFromLeaf(leaf, this);
-    
+
     if (page) {
       this.app.workspace.trigger('file-links-helper:on-change-active-file', page);
     }
@@ -103,8 +108,9 @@ export default class FileLinksHelperPlugin extends Plugin {
 
   private onMetadataChange(type: string, file: TFile, oldPath: string) {
     const currentOpen = getCurrentOpenFile(this);
-    if (currentOpen && currentOpen.file.path === file.path) {
-      this.app.workspace.trigger('file-links-helper:on-change-active-file', currentOpen);
+
+    if (currentOpen) {
+      this.triggerChange(currentOpen);
     }
   }
 }

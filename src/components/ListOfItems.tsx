@@ -27,9 +27,7 @@ const ListOfItems = (props: IListOfItemsProps) => {
           addAtCursor={props.insertAtCursor}
         />
       ))}
-      {props.pages.length === 0 && (
-        <Description text="No notes of such type present." />
-        )}
+      {props.pages.length === 0 && <Description text="No notes of such type present." />}
     </div>
   );
 };

@@ -647,23 +647,12 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
   flex-shrink: 0;
 }
 
+.file-links-helper .shrink-0 {
+  flex-shrink: 0;
+}
+
 .file-links-helper .flex-grow-0 {
   flex-grow: 0;
-}
-
-.file-links-helper .translate-x-2 {
-  --tw-translate-x: 0.5rem;
-  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
-}
-
-.file-links-helper .translate-x-10 {
-  --tw-translate-x: 2.5rem;
-  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
-}
-
-.file-links-helper .-translate-x-10 {
-  --tw-translate-x: -2.5rem;
-  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
 }
 
 .file-links-helper .scale-y-0 {
@@ -719,6 +708,10 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
   justify-content: space-evenly;
 }
 
+.file-links-helper .justify-stretch {
+  justify-content: stretch;
+}
+
 .file-links-helper .gap-m {
   gap: .786096em;
 }
@@ -759,9 +752,14 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
   border-radius: 0.75rem;
 }
 
-.file-links-helper .rounded-b-none {
-  border-bottom-right-radius: 0px;
-  border-bottom-left-radius: 0px;
+.file-links-helper .\!rounded-b-none {
+  border-bottom-right-radius: 0px !important;
+  border-bottom-left-radius: 0px !important;
+}
+
+.file-links-helper .\!rounded-t-none {
+  border-top-left-radius: 0px !important;
+  border-top-right-radius: 0px !important;
 }
 
 .file-links-helper .rounded-l-lg {
@@ -784,26 +782,6 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
   border-bottom-right-radius: 0px;
 }
 
-.file-links-helper .\!rounded-b-none {
-  border-bottom-right-radius: 0px !important;
-  border-bottom-left-radius: 0px !important;
-}
-
-.file-links-helper .\!rounded-b {
-  border-bottom-right-radius: 0.25rem !important;
-  border-bottom-left-radius: 0.25rem !important;
-}
-
-.file-links-helper .\!rounded-b-lg {
-  border-bottom-right-radius: 0.5rem !important;
-  border-bottom-left-radius: 0.5rem !important;
-}
-
-.file-links-helper .\!rounded-t-none {
-  border-top-left-radius: 0px !important;
-  border-top-right-radius: 0px !important;
-}
-
 .file-links-helper .border {
   border-width: 1px;
 }
@@ -816,6 +794,11 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
   border-width: 2px;
 }
 
+.file-links-helper .border-x {
+  border-left-width: 1px;
+  border-right-width: 1px;
+}
+
 .file-links-helper .border-b-0 {
   border-bottom-width: 0px;
 }
@@ -824,20 +807,20 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
   border-left-width: 1px;
 }
 
-.file-links-helper .border-l-0 {
-  border-left-width: 0px;
-}
-
 .file-links-helper .border-r {
   border-right-width: 1px;
 }
 
-.file-links-helper .border-r-0 {
-  border-right-width: 0px;
-}
-
 .file-links-helper .border-t-0 {
   border-top-width: 0px;
+}
+
+.file-links-helper .border-b {
+  border-bottom-width: 1px;
+}
+
+.file-links-helper .border-b-1 {
+  border-bottom-width: 1px;
 }
 
 .file-links-helper .border-solid {
@@ -868,10 +851,6 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
   border-color: var(--color-accent-1);
 }
 
-.file-links-helper .border-base-20 {
-  border-color: var(--color-base-20);
-}
-
 .file-links-helper .border-opacity-0 {
   --tw-border-opacity: 0;
 }
@@ -880,8 +859,8 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
   --tw-border-opacity: 1;
 }
 
-.file-links-helper .\!bg-base-20 {
-  background-color: var(--color-base-20) !important;
+.file-links-helper .\!bg-base-25 {
+  background-color: var(--color-base-25) !important;
 }
 
 .file-links-helper .bg-base-25 {
@@ -900,8 +879,20 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
   background-color: var(--color-base-10) !important;
 }
 
-.file-links-helper .\!bg-base-25 {
-  background-color: var(--color-base-25) !important;
+.file-links-helper .bg-base-15 {
+  background-color: var(--color-base-15);
+}
+
+.file-links-helper .\!bg-base-15 {
+  background-color: var(--color-base-15) !important;
+}
+
+.file-links-helper .bg-base-0 {
+  background-color: var(--color-base-00);
+}
+
+.file-links-helper .bg-base-10 {
+  background-color: var(--color-base-10);
 }
 
 .file-links-helper .p-m {
@@ -917,6 +908,11 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
   padding-bottom: .236em;
 }
 
+.file-links-helper .px-s {
+  padding-left: .345em;
+  padding-right: .345em;
+}
+
 .file-links-helper .pb-s {
   padding-bottom: .345em;
 }
@@ -925,16 +921,12 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
   padding-right: 12px;
 }
 
-.file-links-helper .pt-xl {
-  padding-top: 1.618em;
-}
-
 .file-links-helper .pt-m {
   padding-top: .786096em;
 }
 
-.file-links-helper .pb-xl {
-  padding-bottom: 1.618em;
+.file-links-helper .pt-xl {
+  padding-top: 1.618em;
 }
 
 .file-links-helper .text-lg {
@@ -1005,59 +997,22 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
   opacity: 0;
 }
 
-.file-links-helper .\!shadow-none {
-  --tw-shadow: 0 0 #0000 !important;
-  --tw-shadow-colored: 0 0 #0000 !important;
-  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow) !important;
-}
-
-.file-links-helper .\!shadow {
-  --tw-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1) !important;
-  --tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color) !important;
-  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow) !important;
-}
-
 .file-links-helper .\!shadow-inner {
   --tw-shadow: inset 0 2px 4px 0 rgb(0 0 0 / 0.05) !important;
   --tw-shadow-colored: inset 0 2px 4px 0 var(--tw-shadow-color) !important;
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow) !important;
 }
 
-.file-links-helper .shadow {
-  --tw-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-  --tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);
-  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
-}
-
-.file-links-helper .\!shadow-sm {
-  --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05) !important;
-  --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color) !important;
+.file-links-helper .\!shadow-none {
+  --tw-shadow: 0 0 #0000 !important;
+  --tw-shadow-colored: 0 0 #0000 !important;
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow) !important;
 }
 
-.file-links-helper .shadow-base-100 {
-  --tw-shadow-color: var(--color-base-100);
-  --tw-shadow: var(--tw-shadow-colored);
-}
-
-.file-links-helper .\!shadow-base-100 {
-  --tw-shadow-color: var(--color-base-100) !important;
-  --tw-shadow: var(--tw-shadow-colored) !important;
-}
-
-.file-links-helper .\!shadow-base-50 {
-  --tw-shadow-color: var(--color-base-50) !important;
-  --tw-shadow: var(--tw-shadow-colored) !important;
-}
-
-.file-links-helper .\!shadow-base-30 {
-  --tw-shadow-color: var(--color-base-30) !important;
-  --tw-shadow: var(--tw-shadow-colored) !important;
-}
-
-.file-links-helper .\!shadow-base-40 {
-  --tw-shadow-color: var(--color-base-40) !important;
-  --tw-shadow: var(--tw-shadow-colored) !important;
+.file-links-helper .shadow-inner {
+  --tw-shadow: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
+  --tw-shadow-colored: inset 0 2px 4px 0 var(--tw-shadow-color);
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 }
 
 .file-links-helper .blur {
