@@ -26,7 +26,7 @@ const FileItem = (props: IFileItemProps) => {
 
   useEffect(() => {
     setUpLinks(
-      [...props.page.upFiles].map((page) => ({
+      props.page.upFiles.map((page) => ({
         ...page,
         isParentFile: props.parentPage.file.path === page.file.path,
       })),
@@ -45,8 +45,6 @@ const FileItem = (props: IFileItemProps) => {
 
     app.workspace.openLinkText(page.file.path, page.file.path, newLeaf);
   };
-
-  return (<div>{props.page.file.name}</div>)
 
   const title = (
     <div className="flex w-full flex-row justify-between gap-s">

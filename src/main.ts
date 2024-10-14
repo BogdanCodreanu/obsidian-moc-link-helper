@@ -1,9 +1,8 @@
-import { Plugin, WorkspaceLeaf } from 'obsidian';
+import { Plugin, TFile, WorkspaceLeaf } from 'obsidian';
 import LinksHelperSideView, { FILE_LINKS_HELPER_VIEW_ID } from './views/LinksHelperSideView';
 import { DEFAULT_SETTINGS, PluginCustomSettings, SettingTab } from './settings/pluginSettings';
 import { IconButtonToOpenPlugin } from './settings/iconButtonToOpenPlugin';
-import { getFileFromLeaf } from './utils/workspaceUtils';
-// import { getAPI, isPluginEnabled } from 'obsidian-dataview';
+import { getCurrentOpenFile, getFileFromLeaf } from './utils/workspaceUtils';
 
 export default class FileLinksHelperPlugin extends Plugin {
   public settings: PluginCustomSettings;
@@ -35,10 +34,6 @@ export default class FileLinksHelperPlugin extends Plugin {
         console.log('index ready');
       }),
     );
-
-    this.registerEvent(
-      this.app.metadataCache.on('dataview:metadata-change', (type, file, oldPath) => {}),
-    );
   }
 
   private async onLayoutReady() {
@@ -49,11 +44,15 @@ export default class FileLinksHelperPlugin extends Plugin {
 
     this.registerEvent(this.app.workspace.on('active-leaf-change', this.onLeafChange.bind(this)));
 
+    this.registerEvent(
+      this.app.metadataCache.on('dataview:metadata-change', this.onMetadataChange.bind(this)),
+    );
+
     this.addCommand({
       id: 'file-links-helper:open-view',
       name: 'Open File Links Helper View',
       callback: this.activateView.bind(this),
-    })
+    });
   }
 
   onunload() {
@@ -95,10 +94,17 @@ export default class FileLinksHelperPlugin extends Plugin {
 
   private onLeafChange(leaf: WorkspaceLeaf) {
     if (!leaf) return;
-    const file = getFileFromLeaf(leaf, this);
+    const page = getFileFromLeaf(leaf, this);
+    
+    if (page) {
+      this.app.workspace.trigger('file-links-helper:on-change-active-file', page);
+    }
+  }
 
-    if (file) {
-      this.app.workspace.trigger('file-links-helper:on-change-active-file', file);
+  private onMetadataChange(type: string, file: TFile, oldPath: string) {
+    const currentOpen = getCurrentOpenFile(this);
+    if (currentOpen && currentOpen.file.path === file.path) {
+      this.app.workspace.trigger('file-links-helper:on-change-active-file', currentOpen);
     }
   }
 }

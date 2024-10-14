@@ -27,31 +27,57 @@ export interface DvPage {
     name: string;
     inlinks: any;
     outlinks: any;
-  }
+  };
   isMoc: boolean;
   upFiles: DvPage[];
+  outPages: DvPage[];
 }
 
-export const expandPage = (page: DvPage, settings: PluginCustomSettings) => {
+export const expandPage = (
+  page: DvPage,
+  settings: PluginCustomSettings,
+  isActiveParentFile = true,
+): DvPage => {
   if (!page) {
-    return;
+    return page;
   }
 
   const dv = getAPI();
-  if (page.tags) {
-    page.isMoc = page.tags.includes(settings.parentTag);
+
+  page.isMoc = page.tags ? page.tags.includes(settings.parentTag) : false;
+  page.upFiles = page.up ? page.up.map((u) => dv.page(u.path)).filter((p) => !!p) : [];
+
+  page.outPages = [...new Set(page.file.outlinks.map((l: DvLink) => l.path))]
+    .map((p: string) => dv.page(p))
+    .map((p: DvPage) => {
+      if (isActiveParentFile) {
+        return expandPage(p, settings, false);
+      }
+      return p;
+    })
+    .filter((p: DvPage) => !!p);
+
+  if (isActiveParentFile) {
+    const nrOfOccurances: { [key: string]: number } = {};
+    page.file.outlinks.forEach((up: DvLink) => {
+      if (!nrOfOccurances[up.path]) {
+        nrOfOccurances[up.path] = 0;
+      }
+      nrOfOccurances[up.path]++;
+    });
+
+    Object.keys(nrOfOccurances).forEach((key) => {
+      if (nrOfOccurances[key] === 1) {
+        const isUpLink = page.upFiles.some((up) => up.file.path === key);
+        if (isUpLink) {
+          // remove from outPages
+          page.outPages = page.outPages.filter((p) => p.file.path !== key);
+        }
+      }
+    });
   }
-  console.log('Expanding page', page);
-
-  if (page.up) {
-    console.log('Expanding up', page.up);
-    
-    page.upFiles = page.up.map((u) => dv.page(u.path));
-
-    console.log('Expanded up', page.upFiles);
-  }
-}
-
+  return page;
+};
 
 export const fromFilenameToFile = (
   filename: string,
@@ -158,5 +184,3 @@ export const parentFileHasOutTowardsFile = (
 ): boolean => {
   return [...parentFile.outLinks].includes(towardsFile.path);
 };
-
-

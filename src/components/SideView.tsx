@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useApp } from '../hooks/useApp';
-import { DvLink, DvPage } from '../utils/fileUtils';
+import { DvPage, expandPage } from '../utils/fileUtils';
 import PageTitle from './general/PageTitle';
 import NoFileSelectedScreen from './general/NoFileSelectedScreen';
 import ToggleButtonGroup from './general/ToggleButtonGroup';
@@ -8,7 +8,6 @@ import { debounce } from 'obsidian';
 import { getCurrentOpenFile } from '../utils/workspaceUtils';
 import { TextSelect } from 'lucide-react';
 import Description from './general/Description';
-import { getAPI } from 'obsidian-dataview';
 import ListOfItems from './ListOfItems';
 
 type SCREENS = 'INLINKS' | 'OUTLINKS';
@@ -25,33 +24,32 @@ export const SideView = () => {
     if (!activeFile) {
       return [];
     }
-    const dv = getAPI();
-
-    console.log('Active file outlinks', activeFile.file.outlinks);
-    // remove up links if only 1 outlink
-
-    const outPages = [...new Set(activeFile.file.outlinks.map((l: DvLink) => l.path))]
-      .map((p: string) => dv.page(p))
-      .filter((p: DvPage) => !!p);
-    return outPages;
+    console.log('Active file', activeFile);
+    return activeFile.outPages;
   }, [activeFile]);
 
   const childOutNotes = useMemo<DvPage[]>(() => {
-    return allOutNotes.filter((p) => p?.isMoc);
+    return allOutNotes.filter((p) => !p.isMoc);
   }, [allOutNotes]);
 
   const mocOutNotes = useMemo<DvPage[]>(() => {
-    return allOutNotes.filter((p) => p?.isMoc);
+    return allOutNotes.filter((p) => p.isMoc);
   }, [allOutNotes]);
 
   const subscribeToEvents = debounce(() => {
     view.registerEvent(
       plugin.app.workspace.on('file-links-helper:on-change-active-file', (file: DvPage) => {
         setActiveFile(file);
-        console.log('Active file changed', file);
       }),
     );
-    console.log('Registered events in SideView');
+
+    view.registerEvent(
+      plugin.app.workspace.on('file-links-helper:on-shown-view-changed', (shown: boolean) => {
+        if (!shown) {
+          setActiveFile(undefined);
+        }
+      }),
+    );
   }, 200);
 
   useEffect(() => {
@@ -64,7 +62,9 @@ export const SideView = () => {
         if (!activeFile) {
           const page = getCurrentOpenFile(plugin);
           if (page) {
+            expandPage(page, plugin.settings);
             setActiveFile(page);
+            console.log('Self grabbed active file from view', page);
           }
         }
       }, 500);
@@ -87,7 +87,7 @@ export const SideView = () => {
 
   return (
     <div className="file-links-helper">
-      <div className="fixed bottom-0 left-0 right-0 top-[12px] flex flex-col gap-s p-m">
+      <div className="fixed bottom-0 left-0 right-0 top-[12px] flex flex-col gap-s p-m overflow-auto">
         <PageTitle page={activeFile} />
 
         <ToggleButtonGroup
@@ -121,28 +121,30 @@ export const SideView = () => {
               }
             />
 
-            <ToggleButtonGroup
-              options={[
-                { label: 'All', value: 'All' },
-                { label: 'Notes', value: 'Notes' },
-                { label: plugin.settings.parentTag, value: 'MOC' },
-              ]}
-              selectedOption={outNotesView}
-              onOptionSelected={onOutNotesViewChange}
-              mergeBottom
-            />
+            <div className='overflow-auto'>
+              <ToggleButtonGroup
+                options={[
+                  { label: 'All', value: 'All' },
+                  { label: 'Notes', value: 'Notes' },
+                  { label: plugin.settings.parentTag, value: 'MOC' },
+                ]}
+                selectedOption={outNotesView}
+                onOptionSelected={onOutNotesViewChange}
+                mergeBottom
+              />
 
-            <ListOfItems
-              pages={
-                outNotesView === 'All'
-                  ? allOutNotes
-                  : outNotesView === 'Notes'
-                    ? childOutNotes
-                    : mocOutNotes
-              }
-              parentPage={activeFile}
-              type="SIMPLE"
-            />
+              <ListOfItems
+                pages={
+                  outNotesView === 'All'
+                    ? allOutNotes
+                    : outNotesView === 'Notes'
+                      ? childOutNotes
+                      : mocOutNotes
+                }
+                parentPage={activeFile}
+                type="SIMPLE"
+              />
+            </div>
           </div>
         ) : screen === 'INLINKS' ? (
           <></>

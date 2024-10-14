@@ -25,6 +25,8 @@ class LinksHelperSideView extends ItemView {
     this.createReactRoot();
 
     this.app.workspace.trigger('file-links-helper:on-shown-view-changed', true);
+    console.log('Opened');
+    
 
     const currentFile = getCurrentOpenFile(this.plugin);
     if (currentFile) {
@@ -35,6 +37,9 @@ class LinksHelperSideView extends ItemView {
   async onClose() {
     this.root?.unmount();
     this.app.workspace.trigger('file-links-helper:on-shown-view-changed', false);
+
+    console.log('Closed');
+    
   }
 
   getViewType() {
