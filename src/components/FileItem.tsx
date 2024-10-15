@@ -70,17 +70,13 @@ const FileItem = (props: IFileItemProps) => {
   );
 
   if (props.titleOnly) {
-    return (
-      <div className="rounded-lg border-1 border-base-60 bg-base-5 p-s py-xs transition-all">
-        {title}
-      </div>
-    );
+    return <div className="rounded-lg border-1 border-base-60 bg-base-5 p-s py-xs">{title}</div>;
   }
 
   return (
     <div className="flex flex-row items-center gap-xs">
       <div
-        className={`flex w-full flex-col flex-wrap rounded-lg border-base-60 bg-base-5 p-s py-xs transition-all ${props.isSelected ? 'rounded-2xl border-2 border-text-accent' : 'border-1'} ${props.displayAsUnadded || missingLink ? 'border-2 border-orange' : ''} ${props.page.isMoc && !props.displayAsUnadded ? 'border-2 border-text-accent' : ''}`}
+        className={`flex w-full flex-col flex-wrap rounded-lg border-base-60 bg-base-5 p-s py-xs ${props.isSelected ? 'rounded-2xl border-2 border-text-accent' : 'border-1'} ${props.displayAsUnadded || missingLink ? 'border-2 border-orange' : ''} ${props.page.isMoc && !props.displayAsUnadded ? 'border-2 border-text-accent' : ''}`}
       >
         <div className="flex flex-row items-center justify-between">
           {title}

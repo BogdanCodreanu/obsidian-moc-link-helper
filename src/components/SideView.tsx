@@ -6,13 +6,18 @@ import NoFileSelectedScreen from './general/NoFileSelectedScreen';
 import ToggleButtonGroup from './general/ToggleButtonGroup';
 import { debounce } from 'obsidian';
 import { getCurrentOpenFile } from '../utils/workspaceUtils';
-import { TextSelect } from 'lucide-react';
+import { Notebook, TextSelect } from 'lucide-react';
 import Description from './general/Description';
 import ListOfItems from './ListOfItems';
 import LinkButtons from './general/LinkButtons';
+import { getFilesFromText } from '../utils/text';
+import Header from './general/Header';
+import { getAPI } from 'obsidian-dataview';
 
 type SCREENS = 'INLINKS' | 'OUTLINKS';
 type OutNotesView = 'All' | 'Notes' | 'MOC';
+
+const SELECTION_UPDATE_INTERVAL = 500;
 
 export const SideView = () => {
   const { plugin, view } = useApp();
@@ -20,6 +25,8 @@ export const SideView = () => {
   const [activeFile, setActiveFile] = useState<DvPage | undefined>(undefined);
   const [screen, setScreen] = useState<SCREENS>('OUTLINKS');
   const [outNotesView, setOutNotesView] = useState<OutNotesView>('All');
+  const [selectedPages, setSelectedPages] = useState<DvPage[]>([]);
+  const [isShown, setIsShown] = useState(true);
 
   const allOutNotes = useMemo<DvPage[]>(() => {
     if (!activeFile) {
@@ -43,12 +50,13 @@ export const SideView = () => {
     view.registerEvent(
       plugin.app.workspace.on('file-links-helper:on-change-active-file', (file: DvPage) => {
         setActiveFile(file);
-        console.log("Set active file", file);
+        console.log('Set active file', file);
       }),
     );
 
     view.registerEvent(
       plugin.app.workspace.on('file-links-helper:on-shown-view-changed', (shown: boolean) => {
+        setIsShown(shown);
         if (!shown) {
           setActiveFile(undefined);
         }
@@ -57,10 +65,10 @@ export const SideView = () => {
   }, 200);
 
   useEffect(() => {
-    subscribeToEvents();
-  }, []);
+    if (!isShown || !plugin.isViewVisible()) {
+      return;
+    }
 
-  useEffect(() => {
     if (!activeFile) {
       const interval = setInterval(() => {
         if (!activeFile) {
@@ -75,7 +83,61 @@ export const SideView = () => {
 
       return () => clearInterval(interval);
     }
-  }, [activeFile]);
+  }, [activeFile, isShown]);
+
+  useEffect(() => {
+    subscribeToEvents();
+  }, []);
+
+  // UPDATE ACTIVE FILE SELECTION
+  useEffect(() => {
+    if (!isShown || !plugin.isViewVisible()) {
+      return;
+    }
+
+    const intervalId = setInterval(() => {
+      if (!isShown || !plugin.isViewVisible()) {
+        return;
+      }
+
+      const activeEditor = plugin.app.workspace.activeEditor;
+
+      if (!activeEditor || !activeEditor.editor || !activeFile) {
+        if (selectedPages.length > 0) {
+          const dv = getAPI();
+          setSelectedPages((pages) =>
+            pages.map((p) => expandPage(dv.page(p.file.path), plugin.settings, false)),
+          );
+        }
+        return;
+      }
+
+      const selections = activeEditor.editor.listSelections();
+
+      if (selections.length > 1 || selections.length === 0) {
+        return;
+      }
+
+      const minLine = Math.min(selections[0].head.line, selections[0].anchor.line);
+      const maxLine = Math.max(selections[0].head.line, selections[0].anchor.line);
+      const minChar = Math.min(selections[0].head.ch, selections[0].anchor.ch);
+      const maxChar = Math.max(selections[0].head.ch, selections[0].anchor.ch);
+
+      if (minLine !== maxLine || minChar !== maxChar) {
+        const currentText = activeEditor.editor.getRange(
+          { line: minLine, ch: 0 },
+          { line: maxLine + 1, ch: 0 },
+        );
+
+        const allFiles = plugin.app.vault.getAllLoadedFiles();
+        const files = getFilesFromText(currentText, allFiles, plugin.settings);
+        setSelectedPages(files);
+      } else {
+        setSelectedPages([]);
+      }
+    }, SELECTION_UPDATE_INTERVAL);
+    return () => clearInterval(intervalId);
+  }, [activeFile, isShown]);
 
   const onScreenChange = (screen: SCREENS) => {
     setScreen(screen);
@@ -123,49 +185,78 @@ export const SideView = () => {
         />
 
         {screen === 'OUTLINKS' ? (
-          <div className="flex flex-col gap-xs p-s">
-            <Description
-              text={
-                <div>
-                  Notes included in this{' '}
-                  <span className="font-semibold text-text-accent">
-                    {plugin.settings.parentTag}
-                  </span>{' '}
-                  parent note. You can quickly modify their{' '}
-                  <span className="font-semibold text-text-accent">
-                    {plugin.settings.upPropName}
-                  </span>{' '}
-                  link in relation to this parent note. You can also
-                  <span className="mx-xs inline-block">
-                    <TextSelect size={15} />
-                  </span>
-                  select text to choose specific notes.
+          <div
+            className={`flex flex-col gap-xs rounded-xl border-dotted p-s ${
+              selectedPages.length > 0
+                ? 'border-2 border-base-50 border-opacity-100 bg-base-25 p-m'
+                : ''
+            }`}
+          >
+            {selectedPages && selectedPages.length > 0 ? (
+              <>
+                <Header title="Selected Notes" icon={<Notebook size={16} />} />
+
+                <LinkButtons
+                  pages={selectedPages}
+                  parentPage={activeFile}
+                  useSelectedFiles={false}
+                  addUpLinkToNotes={addUpLinkToNotes}
+                  removeUpLinkFromNotes={removeUpLinkFromNotes}
+                  preserveBg
+                />
+                <ListOfItems
+                  pages={selectedPages}
+                  parentPage={activeFile}
+                  type="SIMPLE"
+                  preserveBg
+                />
+              </>
+            ) : (
+              <>
+                <Description
+                  text={
+                    <div>
+                      Notes included in this{' '}
+                      <span className="font-semibold text-text-accent">
+                        {plugin.settings.parentTag}
+                      </span>{' '}
+                      parent note. You can quickly modify their{' '}
+                      <span className="font-semibold text-text-accent">
+                        {plugin.settings.upPropName}
+                      </span>{' '}
+                      link in relation to this parent note. You can also
+                      <span className="mx-xs inline-block">
+                        <TextSelect size={15} />
+                      </span>
+                      select text to choose specific notes.
+                    </div>
+                  }
+                />
+
+                <div className="overflow-auto">
+                  <ToggleButtonGroup
+                    options={[
+                      { label: 'All', value: 'All' },
+                      { label: 'Notes', value: 'Notes' },
+                      { label: plugin.settings.parentTag, value: 'MOC' },
+                    ]}
+                    selectedOption={outNotesView}
+                    onOptionSelected={onOutNotesViewChange}
+                    mergeBottom
+                  />
+
+                  <LinkButtons
+                    pages={shownNotes}
+                    parentPage={activeFile}
+                    useSelectedFiles={false}
+                    addUpLinkToNotes={addUpLinkToNotes}
+                    removeUpLinkFromNotes={removeUpLinkFromNotes}
+                  />
+
+                  <ListOfItems pages={shownNotes} parentPage={activeFile} type="SIMPLE" />
                 </div>
-              }
-            />
-
-            <div className="overflow-auto">
-              <ToggleButtonGroup
-                options={[
-                  { label: 'All', value: 'All' },
-                  { label: 'Notes', value: 'Notes' },
-                  { label: plugin.settings.parentTag, value: 'MOC' },
-                ]}
-                selectedOption={outNotesView}
-                onOptionSelected={onOutNotesViewChange}
-                mergeBottom
-              />
-
-              <LinkButtons
-                pages={shownNotes}
-                parentPage={activeFile}
-                useSelectedFiles={false}
-                addUpLinkToNotes={addUpLinkToNotes}
-                removeUpLinkFromNotes={removeUpLinkFromNotes}
-              />
-
-              <ListOfItems pages={shownNotes} parentPage={activeFile} type="SIMPLE" />
-            </div>
+              </>
+            )}
           </div>
         ) : screen === 'INLINKS' ? (
           <></>

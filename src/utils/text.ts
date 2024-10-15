@@ -1,11 +1,15 @@
-import { FileData } from './fileUtils';
+import { TAbstractFile } from 'obsidian';
+import { DvPage, expandPage } from './fileUtils';
+import { getAPI } from 'obsidian-dataview';
+import { PluginCustomSettings } from '../settings/pluginSettings';
 
 export const getFilesFromText = (
   text: string | string[],
-  allFiles: Record<string, FileData>,
-): FileData[] => {
+  allFiles: TAbstractFile[],
+  settings: PluginCustomSettings,
+): DvPage[] => {
   const links = getLinksFromText(Array.isArray(text) ? text.join(' ') : text);
-  return getFilesFromLinks(links, allFiles);
+  return getFilesFromLinks(links, allFiles, settings);
 };
 
 const getLinksFromText = (text: string): string[] => {
@@ -38,26 +42,28 @@ const getEndingStringSimilarity = (s1: string, s2: string): string => {
 
 const getFilesFromLinks = (
   links: string[],
-  allFiles: Record<string, FileData>,
-): FileData[] => {
-  const files: FileData[] = [];
+  allFiles: TAbstractFile[],
+  settings: PluginCustomSettings,
+): DvPage[] => {
+  const pages: DvPage[] = [];
   const linksSet = [...links];
+  const dv = getAPI();
 
-  // This is the optimized code
-  for (const file of Object.values(allFiles)) {
+  for (const file of allFiles) {
     const filePathWithoutExtension = file.path.replace(/\.[^/.]+$/, '');
     const foundLink = linksSet.findIndex((l) => filePathWithoutExtension.endsWith(l));
 
     if (foundLink !== -1) {
-      files.push({
-        ...file,
+      const page = expandPage(dv.page(file.path), settings, false);
+      pages.push({
+        ...page,
         uniqueLinkedName: getEndingStringSimilarity(filePathWithoutExtension, linksSet[foundLink]),
       });
       linksSet.splice(foundLink, 1);
     }
   }
 
-  return files;
+  return pages;
 };
 
 export const arrayOrSingleToArray = (value: string | string[] | undefined): string[] => {

@@ -9,12 +9,14 @@ interface IListOfItemsProps {
 
   moveCursorToFile?: (file: DvPage) => void;
   insertAtCursor?: (file: DvPage) => void;
+
+  preserveBg?: boolean;
 }
 
 const ListOfItems = (props: IListOfItemsProps) => {
   return (
     <div
-      className={`flex flex-grow-0 flex-col gap-xs overflow-auto rounded-lg !rounded-t-none border border-t-0 border-solid border-base-50 bg-base-25 p-s pt-m`}
+      className={`flex flex-grow-0 flex-col gap-xs overflow-auto ${props.preserveBg ? '' : 'rounded-lg !rounded-t-none border border-t-0 border-solid border-base-50 bg-base-25 p-s pt-m'}`}
     >
       {props.pages.map((page, index) => (
         <FileItem

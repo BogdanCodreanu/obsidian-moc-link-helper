@@ -8,11 +8,8 @@ import { getCurrentOpenFile } from '../utils/workspaceUtils';
 
 export const FILE_LINKS_HELPER_VIEW_ID = 'file-links-helper-view';
 
-export const DELAY_TO_REFRESH = 1000;
-
 class LinksHelperSideView extends ItemView {
   root: Root | null = null;
-
 
   constructor(
     leaf: WorkspaceLeaf,
@@ -25,8 +22,6 @@ class LinksHelperSideView extends ItemView {
     this.createReactRoot();
 
     this.app.workspace.trigger('file-links-helper:on-shown-view-changed', true);
-    console.log('Opened');
-    
 
     const currentFile = getCurrentOpenFile(this.plugin);
     if (currentFile) {
@@ -37,9 +32,6 @@ class LinksHelperSideView extends ItemView {
   async onClose() {
     this.root?.unmount();
     this.app.workspace.trigger('file-links-helper:on-shown-view-changed', false);
-
-    console.log('Closed');
-    
   }
 
   getViewType() {

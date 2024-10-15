@@ -31,6 +31,7 @@ export interface DvPage {
   isMoc: boolean;
   upFiles: DvPage[];
   outPages: DvPage[];
+  uniqueLinkedName: string;
 }
 
 export const expandPage = (

@@ -10,6 +10,8 @@ interface ILinkButtonsProps {
 
   addUpLinkToNotes: (notes: DvPage[]) => void;
   removeUpLinkFromNotes: (notes: DvPage[]) => void;
+
+  preserveBg?: boolean;
 }
 
 const LinkButtons = (props: ILinkButtonsProps) => {
@@ -31,7 +33,9 @@ const LinkButtons = (props: ILinkButtonsProps) => {
   );
 
   return (
-    <div className="flex flex-col gap-s border-x border-solid border-base-50 bg-base-25 p-s">
+    <div
+      className={`flex flex-col gap-s p-s ${props.preserveBg ? '' : 'border-x border-solid border-base-50 bg-base-25'}`}
+    >
       <div className="flex flex-row">
         {/* NOTES LINK STATUS */}
         {props.pages.length === 0 ? (
@@ -42,12 +46,12 @@ const LinkButtons = (props: ILinkButtonsProps) => {
         ) : notLinkedPages.length > 0 ? (
           <div className={`flex w-full flex-row items-center gap-s text-orange`}>
             <TriangleAlert size={16} />
-            <div className="text-sm">{notLinkedPages.length} child notes not linked.</div>
+            <div className="text-sm">{notLinkedPages.length} notes not linked.</div>
           </div>
         ) : (
           <div className={`flex w-full flex-row items-center gap-s text-green`}>
             <Check size={16} />
-            <div className="text-sm">All child notes linked.</div>
+            <div className="text-sm">All notes linked.</div>
           </div>
         )}
       </div>

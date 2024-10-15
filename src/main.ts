@@ -10,7 +10,6 @@ export default class FileLinksHelperPlugin extends Plugin {
   private iconButtonToOpenPlugin: IconButtonToOpenPlugin;
   private triggerChange = debounce((page: DvPage) => {
     this.app.workspace.trigger('file-links-helper:on-change-active-file', page);
-    console.log("METADATA CHANGED");
   }, 200);
 
   async onload() {
@@ -36,7 +35,7 @@ export default class FileLinksHelperPlugin extends Plugin {
 
     this.registerEvent(
       this.app.metadataCache.on('dataview:index-ready', () => {
-        console.log('index ready');
+        console.log('index ready  - REPLACE WITH IS PLUGIN VALID OR NOT');
       }),
     );
   }
@@ -103,6 +102,19 @@ export default class FileLinksHelperPlugin extends Plugin {
 
     if (page) {
       this.app.workspace.trigger('file-links-helper:on-change-active-file', page);
+    }
+
+    this.app.workspace.trigger('file-links-helper:on-shown-view-changed', this.isViewVisible());
+  }
+
+  public isViewVisible() {
+    const leaves = this.app.workspace.getLeavesOfType(FILE_LINKS_HELPER_VIEW_ID);
+    if (leaves.length > 0) {
+      // A leaf with our view already exists, use that
+      const leaf = leaves[0];
+      return (leaf as any).width > 0;
+    } else {
+      return false;
     }
   }
 
