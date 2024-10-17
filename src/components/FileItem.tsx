@@ -84,7 +84,7 @@ const FileItem = (props: IFileItemProps) => {
           {props.displayAsUnadded && (
             <Button
               onClick={() => props.addAtCursor?.(props.page)}
-              icon={<TextCursorInput size={14} />}
+              icon={<TextCursorInput size={12} />}
               className="h-[24px] w-[24px] p-s text-green"
             />
           )}

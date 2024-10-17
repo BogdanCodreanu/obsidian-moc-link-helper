@@ -1,5 +1,5 @@
 import { Bird, Check, Link, TriangleAlert, Unlink } from 'lucide-react';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { DvPage } from 'src/utils/fileUtils';
 import Button from './Button';
 
@@ -11,15 +11,24 @@ interface ILinkButtonsProps {
   addUpLinkToNotes: (notes: DvPage[]) => void;
   removeUpLinkFromNotes: (notes: DvPage[]) => void;
 
+  ignoreMoc?: boolean;
+
   preserveBg?: boolean;
 }
 
 const LinkButtons = (props: ILinkButtonsProps) => {
+  const [disabled, setDisabled] = useState(false);
+
+  useEffect(() => {
+    setDisabled(false);
+  }, [props.pages, props.parentPage]);
+
   const notLinkedPages = useMemo(() => {
     return props.pages.filter(
       (p) =>
-        p.upFiles.length === 0 ||
-        !p.upFiles.some((f) => f.file.path === props.parentPage.file.path),
+        (props.ignoreMoc ? !p.isMoc : true) &&
+        (p.upFiles.length === 0 ||
+          !p.upFiles.some((f) => f.file.path === props.parentPage.file.path)),
     );
   }, [props.pages]);
 
@@ -31,6 +40,16 @@ const LinkButtons = (props: ILinkButtonsProps) => {
       ),
     [props.pages],
   );
+
+  const onLinkAll = () => {
+    setDisabled(true);
+    props.addUpLinkToNotes(notLinkedPages);
+  };
+
+  const onUnlinkAll = () => {
+    setDisabled(true);
+    props.removeUpLinkFromNotes(linkedPages);
+  };
 
   return (
     <div
@@ -59,17 +78,17 @@ const LinkButtons = (props: ILinkButtonsProps) => {
       {/* BUTTONS */}
       <div className={`flex w-full flex-row justify-stretch gap-s`}>
         <Button
-          onClick={() => props.addUpLinkToNotes(notLinkedPages)}
+          onClick={onLinkAll}
           icon={<Link size={16} />}
           label={props.useSelectedFiles ? 'Link selected files' : 'Link all'}
-          isDisabled={notLinkedPages.length === 0}
+          isDisabled={notLinkedPages.length === 0 || disabled}
           className="w-full bg-base-0 text-green"
         />
         <Button
-          onClick={() => props.removeUpLinkFromNotes(linkedPages)}
+          onClick={onUnlinkAll}
           icon={<Unlink size={16} />}
           label={props.useSelectedFiles ? 'Unlink selected files' : 'Unlink all'}
-          isDisabled={linkedPages.length === 0}
+          isDisabled={linkedPages.length === 0 || disabled}
           className="w-full bg-base-0 text-orange"
         />
       </div>

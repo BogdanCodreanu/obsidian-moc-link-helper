@@ -1,18 +1,18 @@
 import { App, ButtonComponent, PluginSettingTab, Setting } from 'obsidian';
 import FileLinksHelperPlugin from '../main';
 
-
 export interface PluginCustomSettings {
   upPropName: string;
   parentTag: string;
   showIconToOpenPlugin: boolean;
+  showHelpText: boolean;
 }
-
 
 export const DEFAULT_SETTINGS: PluginCustomSettings = {
   upPropName: 'up',
   parentTag: '#MOC',
   showIconToOpenPlugin: true,
+  showHelpText: true,
 };
 
 export class SettingTab extends PluginSettingTab {
@@ -160,6 +160,17 @@ export class SettingTab extends PluginSettingTab {
           this.plugin.settings.showIconToOpenPlugin = value;
           await this.plugin.saveSettings();
           this.onChangeIconShow();
+        });
+      });
+
+    new Setting(containerEl)
+      .setName('Show help text')
+      .setDesc('Show a help text in the plugin sidebar')
+      .addToggle((toggle) => {
+        toggle.setValue(currentSettings.showHelpText).onChange(async (value) => {
+          currentSettings.showHelpText = value;
+          this.plugin.settings.showHelpText = value;
+          await this.plugin.saveSettings();
         });
       });
 

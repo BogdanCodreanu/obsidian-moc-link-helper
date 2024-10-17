@@ -720,6 +720,10 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
   overflow: auto;
 }
 
+.file-links-helper .overflow-hidden {
+  overflow: hidden;
+}
+
 .file-links-helper .\!rounded-none {
   border-radius: 0px !important;
 }
@@ -845,10 +849,6 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 
 .file-links-helper .border-opacity-100 {
   --tw-border-opacity: 1;
-}
-
-.file-links-helper .border-opacity-50 {
-  --tw-border-opacity: 0.5;
 }
 
 .file-links-helper .\!bg-base-25 {

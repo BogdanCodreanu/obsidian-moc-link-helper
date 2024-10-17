@@ -1,18 +1,32 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useApp } from '../hooks/useApp';
-import { addUpLinkToNote, DvPage, expandPage, removeUpLinkFromNote } from '../utils/fileUtils';
+import {
+  addUpLinkToNote,
+  DvPage,
+  expandPage,
+  generateMarkdownLink,
+  removeUpLinkFromNote,
+} from '../utils/fileUtils';
 import PageTitle from './general/PageTitle';
 import NoFileSelectedScreen from './general/NoFileSelectedScreen';
 import ToggleButtonGroup from './general/ToggleButtonGroup';
-import { debounce } from 'obsidian';
+import { debounce, MarkdownFileInfo, Notice } from 'obsidian';
 import { getCurrentOpenFile } from '../utils/workspaceUtils';
-import { Notebook, TextSelect } from 'lucide-react';
+import {
+  CheckCheck,
+  CheckCircle,
+  CheckCircle2,
+  Notebook,
+  TextCursorInput,
+  TextSelect,
+} from 'lucide-react';
 import Description from './general/Description';
 import ListOfItems from './ListOfItems';
 import LinkButtons from './general/LinkButtons';
 import { getFilesFromText } from '../utils/text';
 import Header from './general/Header';
 import { getAPI } from 'obsidian-dataview';
+import Button from './general/Button';
 
 type SCREENS = 'INLINKS' | 'OUTLINKS';
 type OutNotesView = 'All' | 'Notes' | 'MOC';
@@ -27,6 +41,10 @@ export const SideView = () => {
   const [outNotesView, setOutNotesView] = useState<OutNotesView>('All');
   const [selectedPages, setSelectedPages] = useState<DvPage[]>([]);
   const [isShown, setIsShown] = useState(true);
+  const [currentFileEditor, setCurrentFileEditor] = useState<MarkdownFileInfo | undefined>(
+    undefined,
+  );
+  const [selectedLine, setSelectedLine] = useState<number>(-1);
 
   const allOutNotes = useMemo<DvPage[]>(() => {
     if (!activeFile) {
@@ -42,6 +60,19 @@ export const SideView = () => {
   const mocOutNotes = useMemo<DvPage[]>(() => {
     return allOutNotes.filter((p) => p.isMoc);
   }, [allOutNotes]);
+
+  const inPagesNotInActiveFile = useMemo<DvPage[]>(() => {
+    if (!activeFile) {
+      return [];
+    }
+
+    return activeFile.inPages.filter(
+      (p) =>
+        p.upFiles.length > 0 &&
+        p.upFiles.some((f) => f.file.path === activeFile.file.path) &&
+        !activeFile.outPages.some((f) => f.file.path === p.file.path),
+    );
+  }, [activeFile]);
 
   const shownNotes =
     outNotesView === 'All' ? allOutNotes : outNotesView === 'Notes' ? childOutNotes : mocOutNotes;
@@ -112,6 +143,8 @@ export const SideView = () => {
         return;
       }
 
+      setCurrentFileEditor(activeEditor);
+
       const selections = activeEditor.editor.listSelections();
 
       if (selections.length > 1 || selections.length === 0) {
@@ -122,6 +155,16 @@ export const SideView = () => {
       const maxLine = Math.max(selections[0].head.line, selections[0].anchor.line);
       const minChar = Math.min(selections[0].head.ch, selections[0].anchor.ch);
       const maxChar = Math.max(selections[0].head.ch, selections[0].anchor.ch);
+
+      if (
+        selectedLine >= 0 &&
+        minLine === selectedLine &&
+        maxLine === selectedLine &&
+        minChar === 0
+      ) {
+        return;
+      }
+      setSelectedLine(-1);
 
       if (minLine !== maxLine || minChar !== maxChar) {
         const currentText = activeEditor.editor.getRange(
@@ -137,7 +180,7 @@ export const SideView = () => {
       }
     }, SELECTION_UPDATE_INTERVAL);
     return () => clearInterval(intervalId);
-  }, [activeFile, isShown]);
+  }, [activeFile, isShown, selectedLine]);
 
   const onScreenChange = (screen: SCREENS) => {
     setScreen(screen);
@@ -166,19 +209,113 @@ export const SideView = () => {
     );
   };
 
+  const moveCursorToFile = (page: DvPage) => {
+    if (!currentFileEditor || !currentFileEditor.editor) {
+      return;
+    }
+
+    const currentText = currentFileEditor.editor.getValue();
+    const textSplit = currentText.split('\n');
+
+    const matchedText = currentText.match(/^---\n[\s\S]*?\n---\n/);
+    const frontmatter = matchedText ? matchedText[0] : '';
+    const frontmatterLines = frontmatter.split('\n');
+
+    for (let i = 0; i < frontmatterLines.length - 1; i++) {
+      textSplit[i] = 'a';
+    }
+
+    const filesByLines: { [line: number]: DvPage[] } = {};
+    const linesByFilePath: { [path: string]: number[] } = {};
+
+    console.log('textSplit', textSplit);
+
+    const allFiles = plugin.app.vault.getAllLoadedFiles();
+
+    textSplit.forEach((line, index) => {
+      const pages = getFilesFromText(line, allFiles, plugin.settings);
+      if (pages.length === 0) {
+        return;
+      }
+      filesByLines[index] = pages;
+      pages.forEach((page) => {
+        if (!linesByFilePath[page.file.path]) {
+          linesByFilePath[page.file.path] = [];
+        }
+        linesByFilePath[page.file.path].push(index);
+      });
+    });
+
+    const lines = linesByFilePath[page.file.path];
+
+    if (!lines) {
+      new Notice('Cannot select note. It might be in the frontmatter.');
+      return;
+    }
+
+    const line = lines[0];
+    const lineText = currentFileEditor.editor.getLine(line);
+    currentFileEditor.editor.setSelection({ line, ch: 0 }, { line, ch: lineText.length });
+    currentFileEditor.editor.scrollIntoView(
+      { from: { line, ch: 0 }, to: { line, ch: lineText.length } },
+      true,
+    );
+    currentFileEditor.editor.focus();
+
+    setSelectedLine(line);
+  };
+
+  const insertNoteAtCursorPosition = async (note: DvPage) => {
+    if (!currentFileEditor || !currentFileEditor.editor || !activeFile) {
+      new Notice('No active editor or active file. Click inside the text file to fix.');
+      return;
+    }
+
+    const cursor = currentFileEditor.editor.getCursor();
+    const lineNumber = cursor.line;
+
+    const file = plugin.app.vault.getFileByPath(activeFile.file.path);
+    const allFiles = plugin.app.vault.getAllLoadedFiles();
+    if (!file) {
+      return;
+    }
+
+    await plugin.app.vault.process(file, (text) => {
+      return text.split('\n').reduce((acc, line, index) => {
+        if (index === lineNumber) {
+          return `${acc}${line}\n${generateMarkdownLink(note, allFiles)}\n`;
+        }
+
+        return `${acc}${line}\n`;
+      }, '');
+    });
+  };
+
+  const insertAllNotesAtCursorPosition = async (notes: DvPage[]) => {
+    await Promise.all(notes.map((n) => insertNoteAtCursorPosition(n)));
+  };
+
   if (!activeFile) {
-    return <NoFileSelectedScreen />;
+    return (
+      <div className="file-links-helper">
+        <NoFileSelectedScreen />
+      </div>
+    );
   }
 
   return (
     <div className="file-links-helper">
-      <div className="fixed bottom-0 left-0 right-0 top-[12px] flex flex-col gap-s overflow-auto p-m">
+      <div className="fixed bottom-0 left-0 right-0 top-[12px] flex flex-col gap-s p-m">
         <PageTitle page={activeFile} />
 
         <ToggleButtonGroup
           options={[
             { label: 'Notes Included', value: 'OUTLINKS' },
-            { label: 'Missing Notes', value: 'INLINKS' },
+            {
+              label: 'Missing Notes',
+              value: 'INLINKS',
+              warning: inPagesNotInActiveFile.length > 0,
+            },
           ]}
           selectedOption={screen}
           onOptionSelected={onScreenChange}
@@ -186,7 +323,7 @@ export const SideView = () => {
 
         {screen === 'OUTLINKS' ? (
           <div
-            className={`flex flex-col gap-xs rounded-xl border-dotted p-s ${
+            className={`flex flex-col gap-xs overflow-auto rounded-xl border-dotted p-s ${
               selectedPages.length > 0
                 ? 'border-2 border-base-50 border-opacity-100 bg-base-25 p-m'
                 : ''
@@ -213,27 +350,29 @@ export const SideView = () => {
               </>
             ) : (
               <>
-                <Description
-                  text={
-                    <div>
-                      Notes included in this{' '}
-                      <span className="font-semibold text-text-accent">
-                        {plugin.settings.parentTag}
-                      </span>{' '}
-                      parent note. You can quickly modify their{' '}
-                      <span className="font-semibold text-text-accent">
-                        {plugin.settings.upPropName}
-                      </span>{' '}
-                      link in relation to this parent note. You can also
-                      <span className="mx-xs inline-block">
-                        <TextSelect size={15} />
-                      </span>
-                      select text to choose specific notes.
-                    </div>
-                  }
-                />
+                {plugin.settings.showHelpText && (
+                  <Description
+                    text={
+                      <div>
+                        Notes included in this{' '}
+                        <span className="font-semibold text-text-accent">
+                          {plugin.settings.parentTag}
+                        </span>{' '}
+                        parent note. You can quickly modify their{' '}
+                        <span className="font-semibold text-text-accent">
+                          {plugin.settings.upPropName}
+                        </span>{' '}
+                        link in relation to this parent note. You can also
+                        <span className="mx-xs inline-block">
+                          <TextSelect size={15} />
+                        </span>
+                        select text to choose specific notes.
+                      </div>
+                    }
+                  />
+                )}
 
-                <div className="overflow-auto">
+                <div className="flex flex-col overflow-hidden">
                   <ToggleButtonGroup
                     options={[
                       { label: 'All', value: 'All' },
@@ -251,15 +390,70 @@ export const SideView = () => {
                     useSelectedFiles={false}
                     addUpLinkToNotes={addUpLinkToNotes}
                     removeUpLinkFromNotes={removeUpLinkFromNotes}
+                    ignoreMoc={outNotesView === 'All'}
                   />
 
-                  <ListOfItems pages={shownNotes} parentPage={activeFile} type="SIMPLE" />
+                  <ListOfItems
+                    pages={shownNotes}
+                    moveCursorToFile={activeFile ? moveCursorToFile : undefined}
+                    parentPage={activeFile}
+                    type="SIMPLE"
+                  />
                 </div>
               </>
             )}
           </div>
         ) : screen === 'INLINKS' ? (
-          <></>
+          <div className={`flex flex-col gap-xs overflow-auto rounded-xl border-dotted p-s`}>
+            {inPagesNotInActiveFile.length > 0 ? (
+              <>
+                {plugin.settings.showHelpText && (
+                  <Description
+                    text={
+                      <div>
+                        Here are notes that have{' '}
+                        <span className="font-semibold text-text-accent">
+                          {plugin.settings.upPropName}
+                        </span>{' '}
+                        linking to this note, but aren't added here.
+                      </div>
+                    }
+                  />
+                )}
+
+                <div className="flex w-full flex-row justify-end">
+                  <Button
+                    onClick={() => {
+                      insertAllNotesAtCursorPosition(inPagesNotInActiveFile);
+                    }}
+                    icon={<TextCursorInput size={16} />}
+                    label="Insert all at cursor"
+                    className="mx-xs text-green"
+                    isDisabled={!currentFileEditor}
+                    ariaLabel={
+                      !currentFileEditor
+                        ? 'No active editor. Click inside the text file to fix.'
+                        : undefined
+                    }
+                  />
+                </div>
+
+                <ListOfItems
+                  pages={inPagesNotInActiveFile}
+                  parentPage={activeFile}
+                  type="AS_UNADDED"
+                  preserveBg
+                  insertAtCursor={insertNoteAtCursorPosition}
+                />
+              </>
+            ) : (
+              <Description
+                text="All notes that link to this note are already included."
+                className="text-green"
+                bigCenterIcon={<CheckCircle size={32} />}
+              />
+            )}
+          </div>
         ) : null}
 
         {/* {activeFile.isMoc ? (

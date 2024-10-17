@@ -720,6 +720,10 @@ video {
   overflow: auto;
 }
 
+.overflow-hidden {
+  overflow: hidden;
+}
+
 .\!rounded-none {
   border-radius: 0px !important;
 }
@@ -845,10 +849,6 @@ video {
 
 .border-opacity-100 {
   --tw-border-opacity: 1;
-}
-
-.border-opacity-50 {
-  --tw-border-opacity: 0.5;
 }
 
 .\!bg-base-25 {

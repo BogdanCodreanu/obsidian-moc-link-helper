@@ -31,6 +31,7 @@ export interface DvPage {
   isMoc: boolean;
   upFiles: DvPage[];
   outPages: DvPage[];
+  inPages: DvPage[];
   uniqueLinkedName: string;
 }
 
@@ -49,6 +50,16 @@ export const expandPage = (
   page.upFiles = page.up ? page.up.map((u) => dv.page(u.path)).filter((p) => !!p) : [];
 
   page.outPages = [...new Set(page.file.outlinks.map((l: DvLink) => l.path))]
+    .map((p: string) => dv.page(p))
+    .map((p: DvPage) => {
+      if (isActiveParentFile) {
+        return expandPage(p, settings, false);
+      }
+      return p;
+    })
+    .filter((p: DvPage) => !!p);
+
+  page.inPages = [...new Set(page.file.inlinks.map((l: DvLink) => l.path))]
     .map((p: string) => dv.page(p))
     .map((p: DvPage) => {
       if (isActiveParentFile) {
@@ -103,11 +114,20 @@ export const addUpLinkToNote = async (
       return;
     }
 
+    const link = generateMarkdownLink(parentPage, allFiles);
+
     await app.fileManager.processFrontMatter(file, (fm) => {
       if (!fm[settings.upPropName]) {
         fm[settings.upPropName] = [];
       }
-      fm[settings.upPropName].push(generateMarkdownLink(parentPage, allFiles));
+
+      if (typeof fm[settings.upPropName] === 'string' || !Array.isArray(fm[settings.upPropName])) {
+        fm[settings.upPropName] = [fm[settings.upPropName]];
+      }
+
+      if (!fm[settings.upPropName].includes(link)) {
+        fm[settings.upPropName].push(generateMarkdownLink(parentPage, allFiles));
+      }
       return fm;
     });
   }
