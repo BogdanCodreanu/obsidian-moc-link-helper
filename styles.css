@@ -807,6 +807,10 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
   border-left-width: 1px;
 }
 
+.file-links-helper .border-l-0 {
+  border-left-width: 0px;
+}
+
 .file-links-helper .border-r {
   border-right-width: 1px;
 }

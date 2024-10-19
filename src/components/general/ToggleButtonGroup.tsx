@@ -38,7 +38,9 @@ const ToggleButtonGroup = (props: IToggleButtonGroupProps) => {
               props.mergeBottom
                 ? '!rounded-b-none border border-b-0 border-solid border-base-50 !shadow-inner'
                 : ''
-            } ${props.mergeBottom && !isSelected ? 'border-b-1' : ''}`}
+            } ${props.mergeBottom && !isSelected ? 'border-b-1' : ''} ${
+              (index !== 0 && !option.warning)? 'border-l-0' : ''
+            }`}
             onClick={() => props.onOptionSelected(option.value)}
           >
             {option.warning && <TriangleAlert size={16} />}

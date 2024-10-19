@@ -12,14 +12,7 @@ import NoFileSelectedScreen from './general/NoFileSelectedScreen';
 import ToggleButtonGroup from './general/ToggleButtonGroup';
 import { debounce, MarkdownFileInfo, Notice } from 'obsidian';
 import { getCurrentOpenFile } from '../utils/workspaceUtils';
-import {
-  CheckCheck,
-  CheckCircle,
-  CheckCircle2,
-  Notebook,
-  TextCursorInput,
-  TextSelect,
-} from 'lucide-react';
+import { CheckCircle, Frown, Notebook, TextCursorInput, TextSelect } from 'lucide-react';
 import Description from './general/Description';
 import ListOfItems from './ListOfItems';
 import LinkButtons from './general/LinkButtons';
@@ -45,13 +38,14 @@ export const SideView = () => {
     undefined,
   );
   const [selectedLine, setSelectedLine] = useState<number>(-1);
+  const [dataviewReady, setDataviewReady] = useState(plugin.isDataviewReady);
 
   const allOutNotes = useMemo<DvPage[]>(() => {
-    if (!activeFile) {
+    if (!activeFile || !dataviewReady) {
       return [];
     }
     return activeFile.outPages;
-  }, [activeFile]);
+  }, [activeFile, dataviewReady]);
 
   const childOutNotes = useMemo<DvPage[]>(() => {
     return allOutNotes.filter((p) => !p.isMoc);
@@ -62,7 +56,7 @@ export const SideView = () => {
   }, [allOutNotes]);
 
   const inPagesNotInActiveFile = useMemo<DvPage[]>(() => {
-    if (!activeFile) {
+    if (!activeFile || !dataviewReady) {
       return [];
     }
 
@@ -72,7 +66,7 @@ export const SideView = () => {
         p.upFiles.some((f) => f.file.path === activeFile.file.path) &&
         !activeFile.outPages.some((f) => f.file.path === p.file.path),
     );
-  }, [activeFile]);
+  }, [activeFile, dataviewReady]);
 
   const shownNotes =
     outNotesView === 'All' ? allOutNotes : outNotesView === 'Notes' ? childOutNotes : mocOutNotes;
@@ -81,7 +75,12 @@ export const SideView = () => {
     view.registerEvent(
       plugin.app.workspace.on('file-links-helper:on-change-active-file', (file: DvPage) => {
         setActiveFile(file);
-        console.log('Set active file', file);
+      }),
+    );
+
+    view.registerEvent(
+      plugin.app.metadataCache.on('dataview:index-ready', () => {
+        setDataviewReady(true);
       }),
     );
 
@@ -96,7 +95,7 @@ export const SideView = () => {
   }, 200);
 
   useEffect(() => {
-    if (!isShown || !plugin.isViewVisible()) {
+    if (!isShown || !plugin.isViewVisible() || !dataviewReady) {
       return;
     }
 
@@ -107,27 +106,29 @@ export const SideView = () => {
           if (page) {
             expandPage(page, plugin.settings);
             setActiveFile(page);
-            console.log('Self grabbed active file from view', page);
           }
         }
       }, 500);
 
       return () => clearInterval(interval);
     }
-  }, [activeFile, isShown]);
+  }, [activeFile, isShown, dataviewReady]);
 
   useEffect(() => {
+    if (!dataviewReady) {
+      return;
+    }
     subscribeToEvents();
-  }, []);
+  }, [dataviewReady]);
 
   // UPDATE ACTIVE FILE SELECTION
   useEffect(() => {
-    if (!isShown || !plugin.isViewVisible()) {
+    if (!isShown || !plugin.isViewVisible() || !dataviewReady) {
       return;
     }
 
     const intervalId = setInterval(() => {
-      if (!isShown || !plugin.isViewVisible()) {
+      if (!isShown || !plugin.isViewVisible() || !dataviewReady) {
         return;
       }
 
@@ -180,7 +181,7 @@ export const SideView = () => {
       }
     }, SELECTION_UPDATE_INTERVAL);
     return () => clearInterval(intervalId);
-  }, [activeFile, isShown, selectedLine]);
+  }, [activeFile, isShown, selectedLine, dataviewReady]);
 
   const onScreenChange = (screen: SCREENS) => {
     setScreen(screen);
@@ -227,8 +228,6 @@ export const SideView = () => {
 
     const filesByLines: { [line: number]: DvPage[] } = {};
     const linesByFilePath: { [path: string]: number[] } = {};
-
-    console.log('textSplit', textSplit);
 
     const allFiles = plugin.app.vault.getAllLoadedFiles();
 
@@ -294,6 +293,17 @@ export const SideView = () => {
   const insertAllNotesAtCursorPosition = async (notes: DvPage[]) => {
     await Promise.all(notes.map((n) => insertNoteAtCursorPosition(n)));
   };
+
+  if (!dataviewReady) {
+    return (
+      <div className="file-links-helper">
+        <Description
+          bigCenterIcon={<Frown size={32} />}
+          text="Dataview plugin not detected. This plugin requires Dataview to work."
+        />
+      </div>
+    );
+  }
 
   if (!activeFile) {
     return (

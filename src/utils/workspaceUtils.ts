@@ -14,7 +14,12 @@ export const getCurrentOpenFile = (plugin: FileLinksHelperPlugin) : DvPage | und
 };
 
 
-export const getFileFromLeaf = (leaf: WorkspaceLeaf, plugin: FileLinksHelperPlugin): DvPage | undefined  =>{
+export const getFileFromLeaf = (leaf: WorkspaceLeaf | undefined, plugin: FileLinksHelperPlugin): DvPage | undefined  =>{
+  if (!leaf) {
+    const page = getCurrentOpenFile(plugin);
+    return page;
+  }
+
   if (leaf.view.getViewType() === 'markdown') {
     if ('file' in leaf.view && (leaf.view as any).file instanceof TFile) {
       const file = (leaf.view as any).file;

@@ -16,16 +16,24 @@ class LinksHelperSideView extends ItemView {
     private plugin: FileLinksHelperPlugin,
   ) {
     super(leaf);
+    
+    this.registerEvent(
+      plugin.app.metadataCache.on('dataview:index-ready', () => {
+        this.onOpen();
+      }),
+    );
   }
 
   async onOpen() {
     this.createReactRoot();
 
-    this.app.workspace.trigger('file-links-helper:on-shown-view-changed', true);
+    if (this.plugin.isDataviewReady) {
+      this.app.workspace.trigger('file-links-helper:on-shown-view-changed', true);
 
-    const currentFile = getCurrentOpenFile(this.plugin);
-    if (currentFile) {
-      this.app.workspace.trigger('file-links-helper:on-change-active-file', currentFile);
+      const currentFile = getCurrentOpenFile(this.plugin);
+      if (currentFile) {
+        this.app.workspace.trigger('file-links-helper:on-change-active-file', currentFile);
+      }
     }
   }
 
