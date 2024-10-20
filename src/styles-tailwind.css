@@ -968,6 +968,10 @@ video {
   color: var(--text-normal);
 }
 
+.text-base-100 {
+  color: var(--color-base-100);
+}
+
 .opacity-0 {
   opacity: 0;
 }

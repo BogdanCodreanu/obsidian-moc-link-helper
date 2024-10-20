@@ -1,6 +1,7 @@
 import { App, ButtonComponent, PluginSettingTab, Setting } from 'obsidian';
 import FileLinksHelperPlugin from '../main';
 import { getCurrentOpenFile } from '../utils/workspaceUtils';
+import { TagSuggestModal } from './suggest/suggestModal';
 
 export interface PluginCustomSettings {
   upPropName: string;
@@ -14,7 +15,7 @@ export const DEFAULT_SETTINGS: PluginCustomSettings = {
   showHelpText: true,
 };
 
-export class SettingTab extends PluginSettingTab {
+export class SettingsTab extends PluginSettingTab {
   constructor(
     app: App,
     private plugin: FileLinksHelperPlugin,
@@ -41,7 +42,7 @@ export class SettingTab extends PluginSettingTab {
     const currentSettings = { ...this.plugin.settings };
     let saveButton: ButtonComponent | null = null;
 
-    const showSave = () => {
+    const showConfirmSave = () => {
       saveButton?.setDisabled(false);
       saveButton?.buttonEl.removeClass('settings-save-button-disabled');
       saveButton?.setClass('settings-save-button');
@@ -56,39 +57,26 @@ export class SettingTab extends PluginSettingTab {
           .setValue(currentSettings.upPropName)
           .onChange(async (value) => {
             currentSettings.upPropName = value;
-            showSave();
+            showConfirmSave();
           }),
       );
 
     new Setting(containerEl)
-      .setName('Parent Tag')
+      .setName('Parent Tag suggester')
       .setDesc('The tag that is used to mark a file as a parent file')
-      .addDropdown((cb) => {
-        const allVaultTags: string[] = [
-          ...new Set<string>(
-            app.vault.getFiles().flatMap((file) => {
-              const cache = app.metadataCache.getFileCache(file);
-              return [
-                ...(cache?.frontmatter?.tags ?? []),
-                ...(cache?.tags?.map((t) => t.tag) ?? []),
-              ];
-            }),
-          ).add('MOC'),
-        ];
-        const tags: { [key: string]: string } = {};
-        allVaultTags.forEach((tag) => {
-          tags[tag] = tag;
+      .addSearch((cb) => {
+        const suggester = new TagSuggestModal(app, cb.inputEl, async (value) => {
+          cb.setValue(value);
+          currentSettings.parentTag = value;
+          await this.onSettingsUpdate(currentSettings);
         });
 
-        cb.addOptions(tags)
-          .setValue(currentSettings.parentTag)
-          .onChange(async (value) => {
-            while (value.startsWith('#')) {
-              value = value.substring(1);
-            }
-            currentSettings.parentTag = value;
-            showSave();
-          });
+        suggester.registerEvents(cb.inputEl);
+
+        cb.setValue(currentSettings.parentTag).onChange(async (value) => {
+          currentSettings.parentTag = value;
+          showConfirmSave();
+        });
       });
 
     new Setting(containerEl)

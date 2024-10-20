@@ -968,6 +968,10 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
   color: var(--text-normal);
 }
 
+.file-links-helper .text-base-100 {
+  color: var(--color-base-100);
+}
+
 .file-links-helper .opacity-0 {
   opacity: 0;
 }

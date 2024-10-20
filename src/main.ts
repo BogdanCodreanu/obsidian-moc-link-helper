@@ -1,6 +1,6 @@
 import { debounce, Plugin, TFile, WorkspaceLeaf } from 'obsidian';
 import LinksHelperSideView, { FILE_LINKS_HELPER_VIEW_ID } from './views/LinksHelperSideView';
-import { DEFAULT_SETTINGS, PluginCustomSettings, SettingTab } from './settings/pluginSettings';
+import { DEFAULT_SETTINGS, PluginCustomSettings, SettingsTab } from './settings/pluginSettings';
 import { getCurrentOpenFile, getFileFromLeaf } from './utils/workspaceUtils';
 import { DvPage } from './utils/fileUtils';
 
@@ -17,7 +17,7 @@ export default class FileLinksHelperPlugin extends Plugin {
 
     this.registerView(FILE_LINKS_HELPER_VIEW_ID, (leaf) => new LinksHelperSideView(leaf, this));
 
-    this.addSettingTab(new SettingTab(this.app, this));
+    this.addSettingTab(new SettingsTab(this.app, this));
 
     this.app.workspace.onLayoutReady(this.onLayoutReady.bind(this));
 

@@ -12,7 +12,7 @@ import NoFileSelectedScreen from './general/NoFileSelectedScreen';
 import ToggleButtonGroup from './general/ToggleButtonGroup';
 import { debounce, MarkdownFileInfo, Notice } from 'obsidian';
 import { getCurrentOpenFile } from '../utils/workspaceUtils';
-import { CheckCircle, Frown, Notebook, TextCursorInput, TextSelect } from 'lucide-react';
+import { CheckCircle, Frown, Link2Off, Notebook, TextCursorInput, TextSelect } from 'lucide-react';
 import Description from './general/Description';
 import ListOfItems from './ListOfItems';
 import LinkButtons from './general/LinkButtons';
@@ -313,6 +313,42 @@ export const SideView = () => {
     );
   }
 
+  if (!activeFile.isMoc) {
+    return (
+      <div className="file-links-helper">
+        <div className="fixed bottom-0 left-0 right-0 top-[12px] flex flex-col gap-s overflow-auto p-m">
+          <PageTitle page={activeFile} />
+          <Description
+            text={
+              <div className="text-xs text-base-60">
+                This is a child note. To work with notes that link to here, tag this note with{' '}
+                <span className="font-semibold text-text-accent">{plugin.settings.parentTag}</span>.
+              </div>
+            }
+          />
+          <hr />
+
+          {activeFile.upFiles.length > 0 ? (
+            <div className="mt-s flex flex-col gap-s">
+              <div className="flex flex-row items-center gap-s text-lg font-bold">Parent Notes</div>
+              <ListOfItems
+                pages={activeFile.upFiles}
+                parentPage={activeFile}
+                type="TITLE_ONLY"
+                preserveBg
+              />
+            </div>
+          ) : (
+            <div className="flex w-full flex-col items-center justify-center pt-xl text-base-70">
+              <Link2Off size={32} />
+              <div className="mx-xs mb-s text-sm">Unlinked Note</div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="file-links-helper">
       <div className="fixed bottom-0 left-0 right-0 top-[12px] flex flex-col gap-s p-m">
@@ -465,16 +501,6 @@ export const SideView = () => {
             )}
           </div>
         ) : null}
-
-        {/* {activeFile.isMoc ? (
-        <>
-          {inLinksNotInFile.length > 0 && inLinksNotInFileComponent}
-
-          {outNotesInParent}
-        </>
-      ) : (
-        <ChildNoteView settings={settings} upFiles={upFiles} activeFile={activeFile} />
-      )} */}
       </div>
     </div>
   );

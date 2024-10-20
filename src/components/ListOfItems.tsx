@@ -5,7 +5,7 @@ import Description from './general/Description';
 interface IListOfItemsProps {
   parentPage: DvPage;
   pages: DvPage[];
-  type: 'SIMPLE' | 'AS_SELECTED' | 'AS_UNADDED';
+  type: 'SIMPLE' | 'AS_SELECTED' | 'AS_UNADDED' | 'TITLE_ONLY';
 
   moveCursorToFile?: (file: DvPage) => void;
   insertAtCursor?: (file: DvPage) => void;
@@ -23,6 +23,7 @@ const ListOfItems = (props: IListOfItemsProps) => {
           key={page?.file.path ?? index}
           page={page}
           parentPage={props.parentPage}
+          titleOnly={props.type === 'TITLE_ONLY'}
           isSelected={props.type === 'AS_SELECTED'}
           displayAsUnadded={props.type === 'AS_UNADDED'}
           moveCursorToFile={props.moveCursorToFile}

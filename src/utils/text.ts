@@ -65,14 +65,3 @@ const getFilesFromLinks = (
 
   return pages;
 };
-
-export const arrayOrSingleToArray = (value: string | string[] | undefined): string[] => {
-  if (!value) {
-    return [];
-  }
-
-  if (Array.isArray(value)) {
-    return value;
-  }
-  return [value];
-};

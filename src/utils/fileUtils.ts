@@ -43,7 +43,6 @@ export const expandPage = (
   if (!page) {
     return page;
   }
-
   const dv = getAPI();
 
   const pageUpProp = (page as any)[settings.upPropName] as DvLink[];
@@ -72,12 +71,18 @@ export const expandPage = (
     .filter((p: DvPage) => !!p);
 
   if (isActiveParentFile) {
+    page.upFiles.forEach((up) => {
+      expandPage(up, settings, false);
+    });
+  }
+
+  if (isActiveParentFile) {
     const nrOfOccurances: { [key: string]: number } = {};
-    page.file.outlinks.forEach((up: DvLink) => {
-      if (!nrOfOccurances[up.path]) {
-        nrOfOccurances[up.path] = 0;
+    page.file.outlinks.forEach((out: DvLink) => {
+      if (!nrOfOccurances[out.path]) {
+        nrOfOccurances[out.path] = 0;
       }
-      nrOfOccurances[up.path]++;
+      nrOfOccurances[out.path]++;
     });
 
     Object.keys(nrOfOccurances).forEach((key) => {
@@ -91,16 +96,6 @@ export const expandPage = (
     });
   }
   return page;
-};
-
-export const fromFilenameToFile = (
-  filename: string,
-  allFiles: Record<string, FileData>,
-): FileData | null => {
-  const wantedEndingString = `${filename}.md`;
-
-  const file = Object.values(allFiles).find((f) => f.path.endsWith(wantedEndingString));
-  return file || null;
 };
 
 export const addUpLinkToNote = async (
@@ -195,18 +190,4 @@ export const generateUniqueLinkedName = (page: DvPage, allFiles: TAbstractFile[]
 
   const pathWithoutExtension = page.file.path.replace(/\.[^/.]+$/, '');
   return pathWithoutExtension;
-};
-
-export const fileHasUpTowardsFile = (file: FileData, towardsFile: FileData): boolean => {
-  if (!file || !towardsFile) {
-    return false;
-  }
-  return [...file.upFiles].includes(towardsFile.path);
-};
-
-export const parentFileHasOutTowardsFile = (
-  parentFile: FileData,
-  towardsFile: FileData,
-): boolean => {
-  return [...parentFile.outLinks].includes(towardsFile.path);
 };
