@@ -1,7 +1,7 @@
 module.exports = {
   plugins: [
     require('postcss-prefix-selector')({
-      prefix: '.file-links-helper',  // Replace with the desired prefix
+      prefix: '.moc-link-helper',  // Replace with the desired prefix
       transform: function (prefix, selector, prefixedSelector) {
         // If needed, add custom transformation logic here
         return prefixedSelector; 

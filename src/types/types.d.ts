@@ -4,16 +4,16 @@ import { DvPage } from '../utils/fileUtils';
 declare module 'obsidian' {
   interface Workspace {
     on(
-      name: 'file-links-helper:on-shown-view-changed',
+      name: 'moc-link-helper:on-shown-view-changed',
       callback: (isVisible: boolean) => void,
     ): EventRef;
     on(
-      name: 'file-links-helper:on-change-active-file',
+      name: 'moc-link-helper:on-change-active-file',
       callback: (file: DvPage) => void,
     ): EventRef;
 
-    trigger(name: 'file-links-helper:on-shown-view-changed', isVisible: boolean): void;
-    trigger(name: 'file-links-helper:on-change-active-file', file: DvPage): void;
+    trigger(name: 'moc-link-helper:on-shown-view-changed', isVisible: boolean): void;
+    trigger(name: 'moc-link-helper:on-change-active-file', file: DvPage): void;
   }
 
   interface MetadataCache {

@@ -31,7 +31,7 @@ export class SettingsTab extends PluginSettingTab {
     const currentOpen = getCurrentOpenFile(this.plugin);
 
     if (currentOpen) {
-      this.app.workspace.trigger('file-links-helper:on-change-active-file', currentOpen);
+      this.app.workspace.trigger('moc-link-helper:on-change-active-file', currentOpen);
     }
   }
 
@@ -62,7 +62,7 @@ export class SettingsTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName('Parent Tag suggester')
+      .setName('Parent Tag')
       .setDesc('The tag that is used to mark a file as a parent file')
       .addSearch((cb) => {
         const suggester = new TagSuggestModal(app, cb.inputEl, async (value) => {

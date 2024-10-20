@@ -73,7 +73,7 @@ export const SideView = () => {
 
   const subscribeToEvents = debounce(() => {
     view.registerEvent(
-      plugin.app.workspace.on('file-links-helper:on-change-active-file', (file: DvPage) => {
+      plugin.app.workspace.on('moc-link-helper:on-change-active-file', (file: DvPage) => {
         setActiveFile(file);
       }),
     );
@@ -85,7 +85,7 @@ export const SideView = () => {
     );
 
     view.registerEvent(
-      plugin.app.workspace.on('file-links-helper:on-shown-view-changed', (shown: boolean) => {
+      plugin.app.workspace.on('moc-link-helper:on-shown-view-changed', (shown: boolean) => {
         setIsShown(shown);
         if (!shown) {
           setActiveFile(undefined);
@@ -101,7 +101,7 @@ export const SideView = () => {
 
     if (!activeFile) {
       const interval = setInterval(() => {
-        if (!activeFile) {
+        if (!activeFile && dataviewReady) {
           const page = getCurrentOpenFile(plugin);
           if (page) {
             expandPage(page, plugin.settings);
@@ -290,13 +290,13 @@ export const SideView = () => {
     });
   };
 
-  const insertAllNotesAtCursorPosition = async (notes: DvPage[]) => {
+  const insertAllNotesAtCursorPosition = debounce(async (notes: DvPage[]) => {
     await Promise.all(notes.map((n) => insertNoteAtCursorPosition(n)));
-  };
+  }, 400);
 
   if (!dataviewReady) {
     return (
-      <div className="file-links-helper">
+      <div className="moc-link-helper">
         <Description
           bigCenterIcon={<Frown size={32} />}
           text="Dataview plugin not detected. This plugin requires Dataview to work."
@@ -307,7 +307,7 @@ export const SideView = () => {
 
   if (!activeFile) {
     return (
-      <div className="file-links-helper">
+      <div className="moc-link-helper">
         <NoFileSelectedScreen />
       </div>
     );
@@ -315,7 +315,7 @@ export const SideView = () => {
 
   if (!activeFile.isMoc) {
     return (
-      <div className="file-links-helper">
+      <div className="moc-link-helper">
         <div className="fixed bottom-0 left-0 right-0 top-[12px] flex flex-col gap-s overflow-auto p-m">
           <PageTitle page={activeFile} />
           <Description
@@ -350,7 +350,7 @@ export const SideView = () => {
   }
 
   return (
-    <div className="file-links-helper">
+    <div className="moc-link-helper">
       <div className="fixed bottom-0 left-0 right-0 top-[12px] flex flex-col gap-s p-m">
         <PageTitle page={activeFile} />
 

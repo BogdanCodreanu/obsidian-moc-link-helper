@@ -84,6 +84,7 @@ const FileItem = (props: IFileItemProps) => {
           {props.displayAsUnadded && (
             <Button
               onClick={() => props.addAtCursor?.(props.page)}
+              ariaLabel="Insert at cursor"
               icon={<TextCursorInput size={12} />}
               className="h-[24px] w-[24px] p-s text-green"
             />

@@ -9,7 +9,7 @@ export default class FileLinksHelperPlugin extends Plugin {
   public isDataviewReady = false;
 
   private triggerChange = debounce((page: DvPage) => {
-    this.app.workspace.trigger('file-links-helper:on-change-active-file', page);
+    this.app.workspace.trigger('moc-link-helper:on-change-active-file', page);
   }, 200);
 
   async onload() {
@@ -36,17 +36,15 @@ export default class FileLinksHelperPlugin extends Plugin {
       }),
     );
 
-    this.addRibbonIcon('cable', 'Open File Links Helper View', this.activateView.bind(this));
-  }
-
-  private async onLayoutReady() {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
+    this.addRibbonIcon('cable', 'Open MOC Link Helper View', this.activateView.bind(this));
     this.addCommand({
-      id: 'file-links-helper:open-view',
-      name: 'Open File Links Helper View',
+      id: 'moc-link-helper:open-view',
+      name: 'Open MOC Link Helper View',
       callback: this.activateView.bind(this),
     });
+  }
+
+  private onLayoutReady() {
   }
 
   async saveSettings() {
@@ -77,10 +75,10 @@ export default class FileLinksHelperPlugin extends Plugin {
     const page = getFileFromLeaf(leaf, this);
 
     if (page) {
-      this.app.workspace.trigger('file-links-helper:on-change-active-file', page);
+      this.app.workspace.trigger('moc-link-helper:on-change-active-file', page);
     }
 
-    this.app.workspace.trigger('file-links-helper:on-shown-view-changed', this.isViewVisible());
+    this.app.workspace.trigger('moc-link-helper:on-shown-view-changed', this.isViewVisible());
   }
 
   public isViewVisible() {
@@ -94,6 +92,10 @@ export default class FileLinksHelperPlugin extends Plugin {
   }
 
   private onMetadataChange(type: string, file: TFile, oldPath: string) {
+    if (!this.isDataviewReady) {
+      return;
+    }
+
     const currentOpen = getCurrentOpenFile(this);
 
     if (currentOpen) {

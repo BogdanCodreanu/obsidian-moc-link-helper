@@ -6,7 +6,7 @@ import { AppContext } from '../context/AppContext';
 import FileLinksHelperPlugin from 'src/main';
 import { getCurrentOpenFile } from '../utils/workspaceUtils';
 
-export const FILE_LINKS_HELPER_VIEW_ID = 'file-links-helper-view';
+export const FILE_LINKS_HELPER_VIEW_ID = 'moc-link-helper-view';
 
 class LinksHelperSideView extends ItemView {
   root: Root | null = null;
@@ -28,18 +28,18 @@ class LinksHelperSideView extends ItemView {
     this.createReactRoot();
 
     if (this.plugin.isDataviewReady) {
-      this.app.workspace.trigger('file-links-helper:on-shown-view-changed', true);
+      this.app.workspace.trigger('moc-link-helper:on-shown-view-changed', true);
 
       const currentFile = getCurrentOpenFile(this.plugin);
       if (currentFile) {
-        this.app.workspace.trigger('file-links-helper:on-change-active-file', currentFile);
+        this.app.workspace.trigger('moc-link-helper:on-change-active-file', currentFile);
       }
     }
   }
 
   async onClose() {
     this.root?.unmount();
-    this.app.workspace.trigger('file-links-helper:on-shown-view-changed', false);
+    this.app.workspace.trigger('moc-link-helper:on-shown-view-changed', false);
   }
 
   getViewType() {
@@ -47,7 +47,7 @@ class LinksHelperSideView extends ItemView {
   }
 
   getDisplayText() {
-    return 'File Links Helper';
+    return 'MOC Link Helper';
   }
 
   private unmountRoot() {

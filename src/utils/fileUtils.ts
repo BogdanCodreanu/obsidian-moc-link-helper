@@ -45,10 +45,19 @@ export const expandPage = (
   }
   const dv = getAPI();
 
-  const pageUpProp = (page as any)[settings.upPropName] as DvLink[];
+  let pageUpProp = ((page as any)?.[settings.upPropName] ?? [])  as DvLink[] | DvLink | string;
+  
+  if (!Array.isArray(pageUpProp)) {
+    if (typeof pageUpProp === 'string') {
+      pageUpProp = [{ path: pageUpProp }];
+    } else {
+      pageUpProp = [pageUpProp];
+    }
+  }
 
   page.isMoc = page.tags ? page.tags.includes(settings.parentTag) : false;
-  page.upFiles = pageUpProp ? pageUpProp.map((u) => dv.page(u.path)).filter((p) => !!p) : [];
+
+  page.upFiles = pageUpProp.map((u) => dv.page(u.path)).filter((p) => !!p) ?? [];
 
   page.outPages = [...new Set(page.file.outlinks.map((l: DvLink) => l.path))]
     .map((p: string) => dv.page(p))

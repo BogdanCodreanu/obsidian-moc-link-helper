@@ -1,10 +1,10 @@
 {
-	"id": "moc-link-helper",
-	"name": "MOC Link Helper",
+	"id": "file-links-helper",
+	"name": "File Links Helper",
 	"version": "1.0.1",
 	"minAppVersion": "0.15.0",
-	"description": "Helps with some janitor-linking tasks.",
-	"author": "Bogdan-Alexandru Codreanu",
+	"description": "Demonstrates some of the capabilities of the Obsidian API.",
+	"author": "Obsidian",
 	"authorUrl": "https://obsidian.md",
 	"fundingUrl": "https://obsidian.md/pricing",
 	"isDesktopOnly": true

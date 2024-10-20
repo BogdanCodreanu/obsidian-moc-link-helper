@@ -1,5 +1,5 @@
 {
-	"name": "file-links-helper",
+	"name": "moc-link-helper",
 	"version": "1.0.0",
 	"description": "This is sample plugin for Obsidian that helps with some janitor-linking tasks.",
 	"main": "src/main.js",
@@ -7,11 +7,25 @@
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
 		"dev-all": "parallelshell \"npm run tailwind-watch\" \"npm run postcss-watch\" \"npm run dev\"",
-		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production && copy-files-from-to",
 		"postcss-watch": "postcss ./src/styles-tailwind.css -o ./styles.css --watch --verbose",
 		"tailwind-watch": "tailwindcss -i ./src/input.css -o ./src/styles-tailwind.css --watch",
 		"version": "node version-bump.mjs && git add manifest.json versions.json"
 	},
+	"copyFiles": [
+		{
+			"from": "styles.css",
+			"to": "dist/styles.css"
+		},
+		{
+			"from": "manifest.json",
+			"to": "dist/manifest.json"
+		},
+		{
+			"from": "main.js",
+			"to": "dist/main.js"
+		}
+	],
 	"keywords": [],
 	"author": "",
 	"license": "MIT",
@@ -23,6 +37,7 @@
 		"@typescript-eslint/parser": "5.29.0",
 		"autoprefixer": "^10.4.20",
 		"builtin-modules": "3.3.0",
+		"copy-files-from-to": "^3.11.0",
 		"esbuild": "0.17.3",
 		"esbuild-plugin-postcss2": "^0.1.2",
 		"obsidian": "latest",
