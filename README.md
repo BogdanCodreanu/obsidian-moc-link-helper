@@ -55,3 +55,9 @@ This view will show any notes that have an **up-link** to this MOC, but are not 
 
 If you find any issues or bugs, or complains, please submit them at
 https://github.com/BogdanCodreanu/obsidian-moc-checker/issues.
+
+## Donate
+
+If this project saves you time and want to donate, please do so at 
+
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/bogdancod)
