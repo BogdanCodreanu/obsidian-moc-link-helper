@@ -7,9 +7,9 @@
 2. Allow adding a border to an element by just adding a border-width. (https://github.com/tailwindcss/tailwindcss/pull/116)
 */
 
-.file-links-helper *,
-.file-links-helper ::before,
-.file-links-helper ::after {
+.moc-link-helper *,
+.moc-link-helper ::before,
+.moc-link-helper ::after {
   box-sizing: border-box;
   /* 1 */
   border-width: 0;
@@ -20,8 +20,8 @@
   /* 2 */
 }
 
-.file-links-helper ::before,
-.file-links-helper ::after {
+.moc-link-helper ::before,
+.moc-link-helper ::after {
   --tw-content: '';
 }
 
@@ -35,8 +35,8 @@
 7. Disable tap highlights on iOS
 */
 
-.file-links-helper html,
-.file-links-helper :host {
+.moc-link-helper html,
+.moc-link-helper :host {
   line-height: 1.5;
   /* 1 */
   -webkit-text-size-adjust: 100%;
@@ -61,7 +61,7 @@
 2. Inherit line-height from `html` so users can set them as a class directly on the `html` element.
 */
 
-.file-links-helper body {
+.moc-link-helper body {
   margin: 0;
   /* 1 */
   line-height: inherit;
@@ -74,7 +74,7 @@
 3. Ensure horizontal rules are visible by default.
 */
 
-.file-links-helper hr {
+.moc-link-helper hr {
   height: 0;
   /* 1 */
   color: inherit;
@@ -87,7 +87,7 @@
 Add the correct text decoration in Chrome, Edge, and Safari.
 */
 
-.file-links-helper abbr:where([title]) {
+.moc-link-helper abbr:where([title]) {
   -webkit-text-decoration: underline dotted;
           text-decoration: underline dotted;
 }
@@ -96,12 +96,12 @@ Add the correct text decoration in Chrome, Edge, and Safari.
 Remove the default font size and weight for headings.
 */
 
-.file-links-helper h1,
-.file-links-helper h2,
-.file-links-helper h3,
-.file-links-helper h4,
-.file-links-helper h5,
-.file-links-helper h6 {
+.moc-link-helper h1,
+.moc-link-helper h2,
+.moc-link-helper h3,
+.moc-link-helper h4,
+.moc-link-helper h5,
+.moc-link-helper h6 {
   font-size: inherit;
   font-weight: inherit;
 }
@@ -110,7 +110,7 @@ Remove the default font size and weight for headings.
 Reset links to optimize for opt-in styling instead of opt-out.
 */
 
-.file-links-helper a {
+.moc-link-helper a {
   color: inherit;
   text-decoration: inherit;
 }
@@ -119,8 +119,8 @@ Reset links to optimize for opt-in styling instead of opt-out.
 Add the correct font weight in Edge and Safari.
 */
 
-.file-links-helper b,
-.file-links-helper strong {
+.moc-link-helper b,
+.moc-link-helper strong {
   font-weight: bolder;
 }
 
@@ -131,10 +131,10 @@ Add the correct font weight in Edge and Safari.
 4. Correct the odd `em` font sizing in all browsers.
 */
 
-.file-links-helper code,
-.file-links-helper kbd,
-.file-links-helper samp,
-.file-links-helper pre {
+.moc-link-helper code,
+.moc-link-helper kbd,
+.moc-link-helper samp,
+.moc-link-helper pre {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   /* 1 */
   font-feature-settings: normal;
@@ -149,7 +149,7 @@ Add the correct font weight in Edge and Safari.
 Add the correct font size in all browsers.
 */
 
-.file-links-helper small {
+.moc-link-helper small {
   font-size: 80%;
 }
 
@@ -157,19 +157,19 @@ Add the correct font size in all browsers.
 Prevent `sub` and `sup` elements from affecting the line height in all browsers.
 */
 
-.file-links-helper sub,
-.file-links-helper sup {
+.moc-link-helper sub,
+.moc-link-helper sup {
   font-size: 75%;
   line-height: 0;
   position: relative;
   vertical-align: baseline;
 }
 
-.file-links-helper sub {
+.moc-link-helper sub {
   bottom: -0.25em;
 }
 
-.file-links-helper sup {
+.moc-link-helper sup {
   top: -0.5em;
 }
 
@@ -179,7 +179,7 @@ Prevent `sub` and `sup` elements from affecting the line height in all browsers.
 3. Remove gaps between table borders by default.
 */
 
-.file-links-helper table {
+.moc-link-helper table {
   text-indent: 0;
   /* 1 */
   border-color: inherit;
@@ -194,11 +194,11 @@ Prevent `sub` and `sup` elements from affecting the line height in all browsers.
 3. Remove default padding in all browsers.
 */
 
-.file-links-helper button,
-.file-links-helper input,
-.file-links-helper optgroup,
-.file-links-helper select,
-.file-links-helper textarea {
+.moc-link-helper button,
+.moc-link-helper input,
+.moc-link-helper optgroup,
+.moc-link-helper select,
+.moc-link-helper textarea {
   font-family: inherit;
   /* 1 */
   font-feature-settings: inherit;
@@ -225,8 +225,8 @@ Prevent `sub` and `sup` elements from affecting the line height in all browsers.
 Remove the inheritance of text transform in Edge and Firefox.
 */
 
-.file-links-helper button,
-.file-links-helper select {
+.moc-link-helper button,
+.moc-link-helper select {
   text-transform: none;
 }
 
@@ -235,10 +235,10 @@ Remove the inheritance of text transform in Edge and Firefox.
 2. Remove default button styles.
 */
 
-.file-links-helper button,
-.file-links-helper input:where([type='button']),
-.file-links-helper input:where([type='reset']),
-.file-links-helper input:where([type='submit']) {
+.moc-link-helper button,
+.moc-link-helper input:where([type='button']),
+.moc-link-helper input:where([type='reset']),
+.moc-link-helper input:where([type='submit']) {
   -webkit-appearance: button;
   /* 1 */
   background-color: transparent;
@@ -251,7 +251,7 @@ Remove the inheritance of text transform in Edge and Firefox.
 Use the modern Firefox focus style for all focusable elements.
 */
 
-.file-links-helper :-moz-focusring {
+.moc-link-helper :-moz-focusring {
   outline: auto;
 }
 
@@ -259,7 +259,7 @@ Use the modern Firefox focus style for all focusable elements.
 Remove the additional `:invalid` styles in Firefox. (https://github.com/mozilla/gecko-dev/blob/2f9eacd9d3d995c937b4251a5557d95d494c9be1/layout/style/res/forms.css#L728-L737)
 */
 
-.file-links-helper :-moz-ui-invalid {
+.moc-link-helper :-moz-ui-invalid {
   box-shadow: none;
 }
 
@@ -267,7 +267,7 @@ Remove the additional `:invalid` styles in Firefox. (https://github.com/mozilla/
 Add the correct vertical alignment in Chrome and Firefox.
 */
 
-.file-links-helper progress {
+.moc-link-helper progress {
   vertical-align: baseline;
 }
 
@@ -275,8 +275,8 @@ Add the correct vertical alignment in Chrome and Firefox.
 Correct the cursor style of increment and decrement buttons in Safari.
 */
 
-.file-links-helper ::-webkit-inner-spin-button,
-.file-links-helper ::-webkit-outer-spin-button {
+.moc-link-helper ::-webkit-inner-spin-button,
+.moc-link-helper ::-webkit-outer-spin-button {
   height: auto;
 }
 
@@ -285,7 +285,7 @@ Correct the cursor style of increment and decrement buttons in Safari.
 2. Correct the outline style in Safari.
 */
 
-.file-links-helper [type='search'] {
+.moc-link-helper [type='search'] {
   -webkit-appearance: textfield;
   /* 1 */
   outline-offset: -2px;
@@ -296,7 +296,7 @@ Correct the cursor style of increment and decrement buttons in Safari.
 Remove the inner padding in Chrome and Safari on macOS.
 */
 
-.file-links-helper ::-webkit-search-decoration {
+.moc-link-helper ::-webkit-search-decoration {
   -webkit-appearance: none;
 }
 
@@ -305,7 +305,7 @@ Remove the inner padding in Chrome and Safari on macOS.
 2. Change font properties to `inherit` in Safari.
 */
 
-.file-links-helper ::-webkit-file-upload-button {
+.moc-link-helper ::-webkit-file-upload-button {
   -webkit-appearance: button;
   /* 1 */
   font: inherit;
@@ -316,7 +316,7 @@ Remove the inner padding in Chrome and Safari on macOS.
 Add the correct display in Chrome and Safari.
 */
 
-.file-links-helper summary {
+.moc-link-helper summary {
   display: list-item;
 }
 
@@ -324,34 +324,34 @@ Add the correct display in Chrome and Safari.
 Removes the default spacing and border for appropriate elements.
 */
 
-.file-links-helper blockquote,
-.file-links-helper dl,
-.file-links-helper dd,
-.file-links-helper h1,
-.file-links-helper h2,
-.file-links-helper h3,
-.file-links-helper h4,
-.file-links-helper h5,
-.file-links-helper h6,
-.file-links-helper hr,
-.file-links-helper figure,
-.file-links-helper p,
-.file-links-helper pre {
+.moc-link-helper blockquote,
+.moc-link-helper dl,
+.moc-link-helper dd,
+.moc-link-helper h1,
+.moc-link-helper h2,
+.moc-link-helper h3,
+.moc-link-helper h4,
+.moc-link-helper h5,
+.moc-link-helper h6,
+.moc-link-helper hr,
+.moc-link-helper figure,
+.moc-link-helper p,
+.moc-link-helper pre {
   margin: 0;
 }
 
-.file-links-helper fieldset {
+.moc-link-helper fieldset {
   margin: 0;
   padding: 0;
 }
 
-.file-links-helper legend {
+.moc-link-helper legend {
   padding: 0;
 }
 
-.file-links-helper ol,
-.file-links-helper ul,
-.file-links-helper menu {
+.moc-link-helper ol,
+.moc-link-helper ul,
+.moc-link-helper menu {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -361,7 +361,7 @@ Removes the default spacing and border for appropriate elements.
 Reset default styling for dialogs.
 */
 
-.file-links-helper dialog {
+.moc-link-helper dialog {
   padding: 0;
 }
 
@@ -369,7 +369,7 @@ Reset default styling for dialogs.
 Prevent resizing textareas horizontally by default.
 */
 
-.file-links-helper textarea {
+.moc-link-helper textarea {
   resize: vertical;
 }
 
@@ -378,15 +378,15 @@ Prevent resizing textareas horizontally by default.
 2. Set the default placeholder color to the user's configured gray 400 color.
 */
 
-.file-links-helper input::-moz-placeholder, .file-links-helper textarea::-moz-placeholder {
+.moc-link-helper input::-moz-placeholder, .moc-link-helper textarea::-moz-placeholder {
   opacity: 1;
   /* 1 */
   color: #9ca3af;
   /* 2 */
 }
 
-.file-links-helper input::placeholder,
-.file-links-helper textarea::placeholder {
+.moc-link-helper input::placeholder,
+.moc-link-helper textarea::placeholder {
   opacity: 1;
   /* 1 */
   color: #9ca3af;
@@ -397,8 +397,8 @@ Prevent resizing textareas horizontally by default.
 Set the default cursor for buttons.
 */
 
-.file-links-helper button,
-.file-links-helper [role="button"] {
+.moc-link-helper button,
+.moc-link-helper [role="button"] {
   cursor: pointer;
 }
 
@@ -406,7 +406,7 @@ Set the default cursor for buttons.
 Make sure disabled buttons don't get the pointer cursor.
 */
 
-.file-links-helper :disabled {
+.moc-link-helper :disabled {
   cursor: default;
 }
 
@@ -416,14 +416,14 @@ Make sure disabled buttons don't get the pointer cursor.
    This can trigger a poorly considered lint error in some tools but is included by design.
 */
 
-.file-links-helper img,
-.file-links-helper svg,
-.file-links-helper video,
-.file-links-helper canvas,
-.file-links-helper audio,
-.file-links-helper iframe,
-.file-links-helper embed,
-.file-links-helper object {
+.moc-link-helper img,
+.moc-link-helper svg,
+.moc-link-helper video,
+.moc-link-helper canvas,
+.moc-link-helper audio,
+.moc-link-helper iframe,
+.moc-link-helper embed,
+.moc-link-helper object {
   display: block;
   /* 1 */
   vertical-align: middle;
@@ -434,19 +434,19 @@ Make sure disabled buttons don't get the pointer cursor.
 Constrain images and videos to the parent width and preserve their intrinsic aspect ratio. (https://github.com/mozdevs/cssremedy/issues/14)
 */
 
-.file-links-helper img,
-.file-links-helper video {
+.moc-link-helper img,
+.moc-link-helper video {
   max-width: 100%;
   height: auto;
 }
 
 /* Make elements with the HTML hidden attribute stay hidden by default */
 
-.file-links-helper [hidden] {
+.moc-link-helper [hidden] {
   display: none;
 }
 
-.file-links-helper *, .file-links-helper ::before, .file-links-helper ::after {
+.moc-link-helper *, .moc-link-helper ::before, .moc-link-helper ::after {
   --tw-border-spacing-x: 0;
   --tw-border-spacing-y: 0;
   --tw-translate-x: 0;
@@ -500,7 +500,7 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
   --tw-contain-style:  ;
 }
 
-.file-links-helper ::backdrop {
+.moc-link-helper ::backdrop {
   --tw-border-spacing-x: 0;
   --tw-border-spacing-y: 0;
   --tw-translate-x: 0;
@@ -554,384 +554,384 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
   --tw-contain-style:  ;
 }
 
-.file-links-helper .fixed {
+.moc-link-helper .fixed {
   position: fixed;
 }
 
-.file-links-helper .bottom-0 {
+.moc-link-helper .bottom-0 {
   bottom: 0px;
 }
 
-.file-links-helper .left-0 {
+.moc-link-helper .left-0 {
   left: 0px;
 }
 
-.file-links-helper .right-0 {
+.moc-link-helper .right-0 {
   right: 0px;
 }
 
-.file-links-helper .top-\[12px\] {
+.moc-link-helper .top-\[12px\] {
   top: 12px;
 }
 
-.file-links-helper .mx-xs {
+.moc-link-helper .mx-xs {
   margin-left: .236em;
   margin-right: .236em;
 }
 
-.file-links-helper .mb-s {
+.moc-link-helper .mb-s {
   margin-bottom: .345em;
 }
 
-.file-links-helper .mt-s {
+.moc-link-helper .mt-s {
   margin-top: .345em;
 }
 
-.file-links-helper .inline-block {
+.moc-link-helper .inline-block {
   display: inline-block;
 }
 
-.file-links-helper .flex {
+.moc-link-helper .flex {
   display: flex;
 }
 
-.file-links-helper .h-\[24px\] {
+.moc-link-helper .h-\[24px\] {
   height: 24px;
 }
 
-.file-links-helper .w-\[24px\] {
+.moc-link-helper .w-\[24px\] {
   width: 24px;
 }
 
-.file-links-helper .w-full {
+.moc-link-helper .w-full {
   width: 100%;
 }
 
-.file-links-helper .flex-grow-0 {
+.moc-link-helper .flex-grow-0 {
   flex-grow: 0;
 }
 
-.file-links-helper .cursor-default {
+.moc-link-helper .cursor-default {
   cursor: default;
 }
 
-.file-links-helper .cursor-pointer {
+.moc-link-helper .cursor-pointer {
   cursor: pointer;
 }
 
-.file-links-helper .flex-row {
+.moc-link-helper .flex-row {
   flex-direction: row;
 }
 
-.file-links-helper .flex-col {
+.moc-link-helper .flex-col {
   flex-direction: column;
 }
 
-.file-links-helper .flex-wrap {
+.moc-link-helper .flex-wrap {
   flex-wrap: wrap;
 }
 
-.file-links-helper .items-center {
+.moc-link-helper .items-center {
   align-items: center;
 }
 
-.file-links-helper .justify-end {
+.moc-link-helper .justify-end {
   justify-content: flex-end;
 }
 
-.file-links-helper .justify-center {
+.moc-link-helper .justify-center {
   justify-content: center;
 }
 
-.file-links-helper .justify-between {
+.moc-link-helper .justify-between {
   justify-content: space-between;
 }
 
-.file-links-helper .justify-stretch {
+.moc-link-helper .justify-stretch {
   justify-content: stretch;
 }
 
-.file-links-helper .gap-m {
+.moc-link-helper .gap-m {
   gap: .786096em;
 }
 
-.file-links-helper .gap-s {
+.moc-link-helper .gap-s {
   gap: .345em;
 }
 
-.file-links-helper .gap-xs {
+.moc-link-helper .gap-xs {
   gap: .236em;
 }
 
-.file-links-helper .overflow-auto {
+.moc-link-helper .overflow-auto {
   overflow: auto;
 }
 
-.file-links-helper .overflow-hidden {
+.moc-link-helper .overflow-hidden {
   overflow: hidden;
 }
 
-.file-links-helper .\!rounded-none {
+.moc-link-helper .\!rounded-none {
   border-radius: 0px !important;
 }
 
-.file-links-helper .rounded-2xl {
+.moc-link-helper .rounded-2xl {
   border-radius: 1rem;
 }
 
-.file-links-helper .rounded-lg {
+.moc-link-helper .rounded-lg {
   border-radius: 0.5rem;
 }
 
-.file-links-helper .rounded-sm {
+.moc-link-helper .rounded-sm {
   border-radius: 0.125rem;
 }
 
-.file-links-helper .rounded-xl {
+.moc-link-helper .rounded-xl {
   border-radius: 0.75rem;
 }
 
-.file-links-helper .\!rounded-b-none {
+.moc-link-helper .\!rounded-b-none {
   border-bottom-right-radius: 0px !important;
   border-bottom-left-radius: 0px !important;
 }
 
-.file-links-helper .\!rounded-t-none {
+.moc-link-helper .\!rounded-t-none {
   border-top-left-radius: 0px !important;
   border-top-right-radius: 0px !important;
 }
 
-.file-links-helper .rounded-l-lg {
+.moc-link-helper .rounded-l-lg {
   border-top-left-radius: 0.5rem;
   border-bottom-left-radius: 0.5rem;
 }
 
-.file-links-helper .rounded-l-none {
+.moc-link-helper .rounded-l-none {
   border-top-left-radius: 0px;
   border-bottom-left-radius: 0px;
 }
 
-.file-links-helper .rounded-r-lg {
+.moc-link-helper .rounded-r-lg {
   border-top-right-radius: 0.5rem;
   border-bottom-right-radius: 0.5rem;
 }
 
-.file-links-helper .rounded-r-none {
+.moc-link-helper .rounded-r-none {
   border-top-right-radius: 0px;
   border-bottom-right-radius: 0px;
 }
 
-.file-links-helper .border {
+.moc-link-helper .border {
   border-width: 1px;
 }
 
-.file-links-helper .border-1 {
+.moc-link-helper .border-1 {
   border-width: 1px;
 }
 
-.file-links-helper .border-2 {
+.moc-link-helper .border-2 {
   border-width: 2px;
 }
 
-.file-links-helper .border-x {
+.moc-link-helper .border-x {
   border-left-width: 1px;
   border-right-width: 1px;
 }
 
-.file-links-helper .border-b-0 {
+.moc-link-helper .border-b-0 {
   border-bottom-width: 0px;
 }
 
-.file-links-helper .border-b-1 {
+.moc-link-helper .border-b-1 {
   border-bottom-width: 1px;
 }
 
-.file-links-helper .border-l {
+.moc-link-helper .border-l {
   border-left-width: 1px;
 }
 
-.file-links-helper .border-l-0 {
+.moc-link-helper .border-l-0 {
   border-left-width: 0px;
 }
 
-.file-links-helper .border-r {
+.moc-link-helper .border-r {
   border-right-width: 1px;
 }
 
-.file-links-helper .border-t-0 {
+.moc-link-helper .border-t-0 {
   border-top-width: 0px;
 }
 
-.file-links-helper .border-solid {
+.moc-link-helper .border-solid {
   border-style: solid;
 }
 
-.file-links-helper .border-dotted {
+.moc-link-helper .border-dotted {
   border-style: dotted;
 }
 
-.file-links-helper .border-base-50 {
+.moc-link-helper .border-base-50 {
   border-color: var(--color-base-50);
 }
 
-.file-links-helper .border-base-60 {
+.moc-link-helper .border-base-60 {
   border-color: var(--color-base-60);
 }
 
-.file-links-helper .border-orange {
+.moc-link-helper .border-orange {
   border-color: var(--color-orange);
 }
 
-.file-links-helper .border-text-accent {
+.moc-link-helper .border-text-accent {
   border-color: var(--color-accent-1);
 }
 
-.file-links-helper .border-opacity-100 {
+.moc-link-helper .border-opacity-100 {
   --tw-border-opacity: 1;
 }
 
-.file-links-helper .\!bg-base-25 {
+.moc-link-helper .\!bg-base-25 {
   background-color: var(--color-base-25) !important;
 }
 
-.file-links-helper .bg-base-0 {
+.moc-link-helper .bg-base-0 {
   background-color: var(--color-base-00);
 }
 
-.file-links-helper .bg-base-25 {
+.moc-link-helper .bg-base-25 {
   background-color: var(--color-base-25);
 }
 
-.file-links-helper .bg-base-5 {
+.moc-link-helper .bg-base-5 {
   background-color: var(--color-base-05);
 }
 
-.file-links-helper .p-m {
+.moc-link-helper .p-m {
   padding: .786096em;
 }
 
-.file-links-helper .p-s {
+.moc-link-helper .p-s {
   padding: .345em;
 }
 
-.file-links-helper .py-xs {
+.moc-link-helper .py-xs {
   padding-top: .236em;
   padding-bottom: .236em;
 }
 
-.file-links-helper .pb-s {
+.moc-link-helper .pb-s {
   padding-bottom: .345em;
 }
 
-.file-links-helper .pt-m {
+.moc-link-helper .pt-m {
   padding-top: .786096em;
 }
 
-.file-links-helper .pt-xl {
+.moc-link-helper .pt-xl {
   padding-top: 1.618em;
 }
 
-.file-links-helper .text-lg {
+.moc-link-helper .text-lg {
   font-size: 1.125rem;
   line-height: 1.75rem;
 }
 
-.file-links-helper .text-sm {
+.moc-link-helper .text-sm {
   font-size: 0.875rem;
   line-height: 1.25rem;
 }
 
-.file-links-helper .text-xl {
+.moc-link-helper .text-xl {
   font-size: 1.25rem;
   line-height: 1.75rem;
 }
 
-.file-links-helper .text-xs {
+.moc-link-helper .text-xs {
   font-size: 0.75rem;
   line-height: 1rem;
 }
 
-.file-links-helper .font-bold {
+.moc-link-helper .font-bold {
   font-weight: 700;
 }
 
-.file-links-helper .font-normal {
+.moc-link-helper .font-normal {
   font-weight: 400;
 }
 
-.file-links-helper .font-semibold {
+.moc-link-helper .font-semibold {
   font-weight: 600;
 }
 
-.file-links-helper .\!text-orange {
+.moc-link-helper .\!text-orange {
   color: var(--color-orange) !important;
 }
 
-.file-links-helper .text-base-40 {
+.moc-link-helper .text-base-40 {
   color: var(--color-base-40);
 }
 
-.file-links-helper .text-base-60 {
+.moc-link-helper .text-base-60 {
   color: var(--color-base-60);
 }
 
-.file-links-helper .text-base-70 {
+.moc-link-helper .text-base-70 {
   color: var(--color-base-70);
 }
 
-.file-links-helper .text-green {
+.moc-link-helper .text-green {
   color: var(--color-green);
 }
 
-.file-links-helper .text-orange {
+.moc-link-helper .text-orange {
   color: var(--color-orange);
 }
 
-.file-links-helper .text-text-accent {
+.moc-link-helper .text-text-accent {
   color: var(--color-accent-1);
 }
 
-.file-links-helper .text-text-normal {
+.moc-link-helper .text-text-normal {
   color: var(--text-normal);
 }
 
-.file-links-helper .\!shadow-inner {
+.moc-link-helper .\!shadow-inner {
   --tw-shadow: inset 0 2px 4px 0 rgb(0 0 0 / 0.05) !important;
   --tw-shadow-colored: inset 0 2px 4px 0 var(--tw-shadow-color) !important;
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow) !important;
 }
 
-.file-links-helper .\!shadow-none {
+.moc-link-helper .\!shadow-none {
   --tw-shadow: 0 0 #0000 !important;
   --tw-shadow-colored: 0 0 #0000 !important;
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow) !important;
 }
 
-.file-links-helper .filter {
+.moc-link-helper .filter {
   filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
 }
 
-.file-links-helper .settings-save-button-disabled {
+.moc-link-helper .settings-save-button-disabled {
   background-color: var(--color-base-50) !important;
   color: var(--color-base-00) !important;
 }
 
-.file-links-helper .settings-save-button {
+.moc-link-helper .settings-save-button {
   background-color: var(--color-accent-1) !important;
   color: var(--color-base-00) !important;
 }
 
-.file-links-helper .file-links-helper-parent-file-icon {
+.moc-link-helper .file-links-helper-parent-file-icon {
   padding: 0 0.5rem;
   color: var(--text-accent);
   cursor: pointer;
   display: inline-block;
 }
 
-.file-links-helper .hover\:text-text-accent:hover {
+.moc-link-helper .hover\:text-text-accent:hover {
   color: var(--color-accent-1);
 }
 
-.file-links-helper .hover\:underline:hover {
+.moc-link-helper .hover\:underline:hover {
   text-decoration-line: underline;
 }

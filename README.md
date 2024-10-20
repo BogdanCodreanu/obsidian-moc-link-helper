@@ -1,4 +1,4 @@
-# Obsidian Sample Plugin
+# MOC Link Helper
 
 This is a sample plugin for Obsidian (https://obsidian.md).
 

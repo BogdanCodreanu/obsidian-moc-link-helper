@@ -1,7 +1,13 @@
 {
 	"name": "moc-link-helper",
 	"version": "1.0.0",
-	"description": "This is sample plugin for Obsidian that helps with some janitor-linking tasks.",
+	"licenses": [
+		{
+			"type": "MIT",
+			"url": "https://opensource.org/licenses/MIT"
+		}
+	],
+	"description": "Obsidian plugin that helps with some janitor-linking tasks.",
 	"main": "src/main.js",
 	"type": "module",
 	"scripts": {
@@ -26,6 +32,9 @@
 			"to": "dist/main.js"
 		}
 	],
+	"copyFilesSettings": {
+		"whenFileExists": "overwrite"
+	},
 	"keywords": [],
 	"author": "",
 	"license": "MIT",
