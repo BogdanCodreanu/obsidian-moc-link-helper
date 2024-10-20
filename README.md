@@ -58,6 +58,6 @@ https://github.com/BogdanCodreanu/obsidian-moc-checker/issues.
 
 ## Donate
 
-If this project saves you time and want to donate, please do so at 
+If this project saves you time and you want to donate, please do so at 
 
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/bogdancod)
