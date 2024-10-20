@@ -1,10 +1,10 @@
 {
 	"id": "moc-link-helper",
 	"name": "MOC Link Helper",
-	"version": "1.0.1",
-	"minAppVersion": "0.15.0",
-	"description": "Helps with some janitor-linking tasks.",
-	"author": "Bogdan-Alexandru Codreanu",
+	"version": "1.1.0",
+	"minAppVersion": "1.6.0",
+	"description": "Helps with some MOC janitor-linking tasks.",
+	"author": "Bogdan Codreanu",
 	"fundingUrl": "https://buymeacoffee.com/bogdancod",
 	"isDesktopOnly": true
 }

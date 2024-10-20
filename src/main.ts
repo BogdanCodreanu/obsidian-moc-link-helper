@@ -39,7 +39,7 @@ export default class FileLinksHelperPlugin extends Plugin {
     this.addRibbonIcon('cable', 'Open MOC Link Helper View', this.activateView.bind(this));
     this.addCommand({
       id: 'moc-link-helper:open-view',
-      name: 'Open MOC Link Helper View',
+      name: 'Open View',
       callback: this.activateView.bind(this),
     });
   }

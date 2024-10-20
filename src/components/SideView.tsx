@@ -299,7 +299,7 @@ export const SideView = () => {
       <div className="moc-link-helper">
         <Description
           bigCenterIcon={<Frown size={32} />}
-          text="Dataview plugin not detected. This plugin requires Dataview to work."
+          text="Dataview plugin not detected. This plugin requires Dataview to work. If you just installed the plugin, please reload the app."
         />
       </div>
     );
