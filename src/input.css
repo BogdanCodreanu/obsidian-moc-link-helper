@@ -10,10 +10,3 @@
   background-color: var(--color-accent-1) !important;
   color: var(--color-base-00) !important;
 }
-
-.file-links-helper-parent-file-icon {
-    padding: 0 0.5rem;
-    color: var(--text-accent);
-    cursor: pointer;
-    display: inline-block;
-}

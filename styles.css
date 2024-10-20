@@ -921,13 +921,6 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
   color: var(--color-base-00) !important;
 }
 
-.moc-link-helper .file-links-helper-parent-file-icon {
-  padding: 0 0.5rem;
-  color: var(--text-accent);
-  cursor: pointer;
-  display: inline-block;
-}
-
 .moc-link-helper .hover\:text-text-accent:hover {
   color: var(--color-accent-1);
 }
