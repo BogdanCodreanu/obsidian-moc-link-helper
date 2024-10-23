@@ -25,8 +25,8 @@ export interface DvPage {
   file: {
     path: string;
     name: string;
-    inlinks: any;
-    outlinks: any;
+    inlinks: DvLink[];
+    outlinks: DvLink[];
   };
   isMoc: boolean;
   upFiles: DvPage[];
