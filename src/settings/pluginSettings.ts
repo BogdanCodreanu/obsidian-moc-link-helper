@@ -1,4 +1,4 @@
-import { App, ButtonComponent, PluginSettingTab, Setting } from 'obsidian';
+import { App, debounce, PluginSettingTab, Setting } from 'obsidian';
 import FileLinksHelperPlugin from '../main';
 import { getCurrentOpenFile } from '../utils/workspaceUtils';
 import { TagSuggestModal } from './suggest/suggestModal';
@@ -40,16 +40,13 @@ export class SettingsTab extends PluginSettingTab {
     containerEl.empty();
 
     const currentSettings = { ...this.plugin.settings };
-    let saveButton: ButtonComponent | null = null;
 
-    const showConfirmSave = () => {
-      saveButton?.setDisabled(false);
-      saveButton?.buttonEl.removeClass('settings-save-button-disabled');
-      saveButton?.setClass('settings-save-button');
-    };
+    const saveSettingsDebounced = debounce(async () => {
+      await this.onSettingsUpdate(currentSettings);
+    }, 1000);
 
     new Setting(containerEl)
-      .setName('Up Property Name')
+      .setName('Up property name')
       .setDesc('The frontmatter property of the file that contains the up links to parent files')
       .addText((text) =>
         text
@@ -57,12 +54,12 @@ export class SettingsTab extends PluginSettingTab {
           .setValue(currentSettings.upPropName)
           .onChange(async (value) => {
             currentSettings.upPropName = value;
-            showConfirmSave();
+            saveSettingsDebounced();
           }),
       );
 
     new Setting(containerEl)
-      .setName('Parent Tag')
+      .setName('Parent tag')
       .setDesc('The tag that is used to mark a file as a parent file')
       .addSearch((cb) => {
         const suggester = new TagSuggestModal(app, cb.inputEl, async (value) => {
@@ -75,27 +72,8 @@ export class SettingsTab extends PluginSettingTab {
 
         cb.setValue(currentSettings.parentTag).onChange(async (value) => {
           currentSettings.parentTag = value;
-          showConfirmSave();
+          saveSettingsDebounced();
         });
-      });
-
-    new Setting(containerEl)
-      .setName('Save Settings')
-      .setDesc('Click the button to save the settings and update the plugin')
-      .addButton((button) => {
-        saveButton = button;
-        return button
-          .setIcon('save')
-          .setCta()
-          .setClass('settings-save-button-disabled')
-          .setDisabled(true)
-          .onClick(async () => {
-            await this.onSettingsUpdate(currentSettings);
-
-            saveButton?.buttonEl.removeClass('settings-save-button');
-            saveButton?.setClass('settings-save-button-disabled');
-            saveButton?.setDisabled(true);
-          });
       });
 
     new Setting(containerEl).setHeading().setName('Workspace UI');

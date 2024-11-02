@@ -330,7 +330,7 @@ export const SideView = () => {
 
           {activeFile.upFiles.length > 0 ? (
             <div className="mt-s flex flex-col gap-s">
-              <div className="flex flex-row items-center gap-s text-lg font-bold">Parent Notes</div>
+              <div className="flex flex-row items-center gap-s text-lg font-bold">Parent notes</div>
               <ListOfItems
                 pages={activeFile.upFiles}
                 parentPage={activeFile}
@@ -341,7 +341,7 @@ export const SideView = () => {
           ) : (
             <div className="flex w-full flex-col items-center justify-center pt-xl text-base-70">
               <Link2Off size={32} />
-              <div className="mx-xs mb-s text-sm">Unlinked Note</div>
+              <div className="mx-xs mb-s text-sm">Unlinked note</div>
             </div>
           )}
         </div>
@@ -356,9 +356,9 @@ export const SideView = () => {
 
         <ToggleButtonGroup
           options={[
-            { label: 'Notes Included', value: 'OUTLINKS' },
+            { label: 'Notes included', value: 'OUTLINKS' },
             {
-              label: 'Missing Notes',
+              label: 'Missing notes',
               value: 'INLINKS',
               warning: inPagesNotInActiveFile.length > 0,
             },
@@ -377,7 +377,7 @@ export const SideView = () => {
           >
             {selectedPages && selectedPages.length > 0 ? (
               <>
-                <Header title="Selected Notes" icon={<Notebook size={16} />} />
+                <Header title="Selected notes" icon={<Notebook size={16} />} />
 
                 <LinkButtons
                   pages={selectedPages}
