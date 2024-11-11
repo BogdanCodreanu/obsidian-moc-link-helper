@@ -68,6 +68,16 @@ export const SideView = () => {
     );
   }, [activeFile, dataviewReady]);
 
+  const indirectParents = useMemo<DvPage[]>(() => {
+    if (!activeFile || !dataviewReady || activeFile.isMoc) {
+      return [];
+    }
+
+    return activeFile.inPages.filter(
+      (p) => p.isMoc && !activeFile.upFiles.map((f) => f.file.path).includes(p.file.path),
+    );
+  }, [activeFile, dataviewReady]);
+
   const shownNotes =
     outNotesView === 'All' ? allOutNotes : outNotesView === 'Notes' ? childOutNotes : mocOutNotes;
 
@@ -343,6 +353,44 @@ export const SideView = () => {
               <Link2Off size={32} />
               <div className="mx-xs mb-s text-sm">Unlinked note</div>
             </div>
+          )}
+
+          {indirectParents.length > 0 && (
+            <>
+              <div className="mx-m mt-s flex flex-col gap-s rounded-md border-1 border-base-70 p-m">
+                <div className="flex flex-row items-center gap-s text-lg font-bold text-base-70">
+                  Indirect parents
+                </div>
+                {plugin.settings.showHelpText && (
+                  <Description
+                    text={
+                      <div>
+                        Parent notes that contain this note, but aren't added as{' '}
+                        <span className="font-semibold text-text-accent">
+                          {plugin.settings.upPropName}
+                        </span>
+                        .
+                      </div>
+                    }
+                  />
+                )}
+                <ListOfItems
+                  pages={indirectParents}
+                  parentPage={activeFile}
+                  type="AS_MISSING_PARENT"
+                  preserveBg
+                  addUpLink={(page) =>
+                    addUpLinkToNote(
+                      activeFile,
+                      page,
+                      plugin.app,
+                      plugin.settings,
+                      plugin.app.vault.getAllLoadedFiles(),
+                    )
+                  }
+                />
+              </div>
+            </>
           )}
         </div>
       </div>

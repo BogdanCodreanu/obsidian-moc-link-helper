@@ -11,7 +11,7 @@ export interface PluginCustomSettings {
 
 export const DEFAULT_SETTINGS: PluginCustomSettings = {
   upPropName: 'up',
-  parentTag: '#MOC',
+  parentTag: 'MOC',
   showHelpText: true,
 };
 

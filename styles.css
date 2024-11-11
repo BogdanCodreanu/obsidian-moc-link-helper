@@ -574,9 +574,18 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
   top: 12px;
 }
 
+.moc-link-helper .bottom-1 {
+  bottom: 0.25rem;
+}
+
 .moc-link-helper .mx-xs {
   margin-left: .236em;
   margin-right: .236em;
+}
+
+.moc-link-helper .mx-m {
+  margin-left: .786096em;
+  margin-right: .786096em;
 }
 
 .moc-link-helper .mb-s {
@@ -691,6 +700,10 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
   border-radius: 0.75rem;
 }
 
+.moc-link-helper .rounded-md {
+  border-radius: 0.375rem;
+}
+
 .moc-link-helper .\!rounded-b-none {
   border-bottom-right-radius: 0px !important;
   border-bottom-left-radius: 0px !important;
@@ -786,6 +799,10 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
   border-color: var(--color-accent-1);
 }
 
+.moc-link-helper .border-base-70 {
+  border-color: var(--color-base-70);
+}
+
 .moc-link-helper .border-opacity-100 {
   --tw-border-opacity: 1;
 }
@@ -819,6 +836,11 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
   padding-bottom: .236em;
 }
 
+.moc-link-helper .px-m {
+  padding-left: .786096em;
+  padding-right: .786096em;
+}
+
 .moc-link-helper .pb-s {
   padding-bottom: .345em;
 }
@@ -849,6 +871,11 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 .moc-link-helper .text-xs {
   font-size: 0.75rem;
   line-height: 1rem;
+}
+
+.moc-link-helper .text-base {
+  font-size: 1rem;
+  line-height: 1.5rem;
 }
 
 .moc-link-helper .font-bold {

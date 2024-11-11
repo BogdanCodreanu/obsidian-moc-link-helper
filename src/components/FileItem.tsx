@@ -1,6 +1,6 @@
 import { useApp } from 'src/hooks/useApp';
 import { useEffect, useState } from 'react';
-import { LayoutTemplate, Search, TextCursorInput, TriangleAlert } from 'lucide-react';
+import { DiamondPlus, LayoutTemplate, Search, TextCursorInput, TriangleAlert } from 'lucide-react';
 import Button from './general/Button';
 import { DvPage } from '../utils/fileUtils';
 
@@ -12,6 +12,8 @@ interface IFileItemProps {
   addAtCursor?: (note: DvPage) => void;
   titleOnly?: boolean;
   moveCursorToFile?: (file: DvPage) => void;
+  addUpLink?: (file: DvPage) => void;
+  asMissingParent?: boolean;
 }
 
 interface FileDataWithProps extends DvPage {
@@ -22,7 +24,8 @@ const FileItem = (props: IFileItemProps) => {
   const { plugin } = useApp();
   const { settings, app } = plugin;
   const [upLinks, setUpLinks] = useState<FileDataWithProps[]>([]);
-  const missingLink = !props.displayAsUnadded && upLinks.every((l) => !l.isParentFile);
+  const missingLink =
+    !props.displayAsUnadded && !props.asMissingParent && upLinks.every((l) => !l.isParentFile);
 
   useEffect(() => {
     setUpLinks(
@@ -81,7 +84,7 @@ const FileItem = (props: IFileItemProps) => {
         <div className="flex flex-row items-center justify-between">
           {title}
 
-          {props.displayAsUnadded && (
+          {props.displayAsUnadded && props.addAtCursor && (
             <Button
               onClick={() => props.addAtCursor?.(props.page)}
               ariaLabel="Insert at cursor"
@@ -89,8 +92,16 @@ const FileItem = (props: IFileItemProps) => {
               className="h-[24px] w-[24px] p-s text-green"
             />
           )}
+          {!!props.addUpLink && (
+            <Button
+              onClick={() => props.addUpLink?.(props.page)}
+              ariaLabel="Add link"
+              icon={<DiamondPlus size={16} />}
+              className="h-[24px] w-[24px] p-s text-green"
+            />
+          )}
         </div>
-        {!props.displayAsUnadded && (
+        {!props.displayAsUnadded && !props.asMissingParent && (
           <div className="flex flex-row items-center gap-xs">
             <div className="rounded-sm text-xs text-text-accent">{settings.upPropName}</div>
             {missingLink && !props.page.isMoc && (

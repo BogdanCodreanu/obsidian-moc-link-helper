@@ -2,13 +2,21 @@ import { DvPage } from '../utils/fileUtils';
 import FileItem from './FileItem';
 import Description from './general/Description';
 
+export type LIST_ITEM_TYPE =
+  | 'SIMPLE'
+  | 'AS_SELECTED'
+  | 'AS_UNADDED'
+  | 'AS_MISSING_PARENT'
+  | 'TITLE_ONLY';
+
 interface IListOfItemsProps {
   parentPage: DvPage;
   pages: DvPage[];
-  type: 'SIMPLE' | 'AS_SELECTED' | 'AS_UNADDED' | 'TITLE_ONLY';
+  type: LIST_ITEM_TYPE;
 
   moveCursorToFile?: (file: DvPage) => void;
   insertAtCursor?: (file: DvPage) => void;
+  addUpLink?: (file: DvPage) => void;
 
   preserveBg?: boolean;
 }
@@ -28,6 +36,8 @@ const ListOfItems = (props: IListOfItemsProps) => {
           displayAsUnadded={props.type === 'AS_UNADDED'}
           moveCursorToFile={props.moveCursorToFile}
           addAtCursor={props.insertAtCursor}
+          addUpLink={props.addUpLink}
+          asMissingParent={props.type === 'AS_MISSING_PARENT'}
         />
       ))}
       {props.pages.length === 0 && <Description text="No notes of such type present." />}

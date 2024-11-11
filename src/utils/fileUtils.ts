@@ -45,8 +45,8 @@ export const expandPage = (
   }
   const dv = getAPI();
 
-  let pageUpProp = ((page as any)?.[settings.upPropName] ?? [])  as DvLink[] | DvLink | string;
-  
+  let pageUpProp = ((page as any)?.[settings.upPropName] ?? []) as DvLink[] | DvLink | string;
+
   if (!Array.isArray(pageUpProp)) {
     if (typeof pageUpProp === 'string') {
       pageUpProp = [{ path: pageUpProp }];
