@@ -183,8 +183,7 @@ export const SideView = () => {
           { line: maxLine + 1, ch: 0 },
         );
 
-        const allFiles = plugin.app.vault.getAllLoadedFiles();
-        const files = getFilesFromText(currentText, allFiles, plugin.settings);
+        const files = getFilesFromText(currentText, activeFile.outPages, plugin.settings);
         setSelectedPages(files);
       } else {
         setSelectedPages([]);
@@ -221,7 +220,7 @@ export const SideView = () => {
   };
 
   const moveCursorToFile = (page: DvPage) => {
-    if (!currentFileEditor || !currentFileEditor.editor) {
+    if (!currentFileEditor || !currentFileEditor.editor || !activeFile) {
       return;
     }
 
@@ -239,10 +238,9 @@ export const SideView = () => {
     const filesByLines: { [line: number]: DvPage[] } = {};
     const linesByFilePath: { [path: string]: number[] } = {};
 
-    const allFiles = plugin.app.vault.getAllLoadedFiles();
 
     textSplit.forEach((line, index) => {
-      const pages = getFilesFromText(line, allFiles, plugin.settings);
+      const pages = getFilesFromText(line, activeFile.outPages, plugin.settings);
       if (pages.length === 0) {
         return;
       }

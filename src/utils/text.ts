@@ -1,15 +1,14 @@
-import { TAbstractFile } from 'obsidian';
 import { DvPage, expandPage } from './fileUtils';
 import { getAPI } from 'obsidian-dataview';
 import { PluginCustomSettings } from '../settings/pluginSettings';
 
 export const getFilesFromText = (
   text: string | string[],
-  allFiles: TAbstractFile[],
+  allOutPages: DvPage[],
   settings: PluginCustomSettings,
 ): DvPage[] => {
   const links = getLinksFromText(Array.isArray(text) ? text.join(' ') : text);
-  return getFilesFromLinks(links, allFiles, settings);
+  return getFilesFromLinks(links, allOutPages, settings);
 };
 
 const getLinksFromText = (text: string): string[] => {
@@ -42,24 +41,59 @@ const getEndingStringSimilarity = (s1: string, s2: string): string => {
 
 const getFilesFromLinks = (
   links: string[],
-  allFiles: TAbstractFile[],
+  allPages: DvPage[],
   settings: PluginCustomSettings,
 ): DvPage[] => {
   const pages: DvPage[] = [];
   const linksSet = [...links];
   const dv = getAPI();
 
-  for (const file of allFiles) {
-    const filePathWithoutExtension = file.path.replace(/\.[^/.]+$/, '');
-    const foundLink = linksSet.findIndex((l) => filePathWithoutExtension.endsWith(l));
+  const allPaths = allPages.map((p) => p.file.path);
+  const allPathsWithoutExtension = allPaths.map((p) => p.replace(/\.[^/.]+$/, ''));
 
-    if (foundLink !== -1) {
-      const page = expandPage(dv.page(file.path), settings, false);
+  for (const link of linksSet) {
+    let matchingPaths = allPathsWithoutExtension.filter((p) => p.endsWith(link));
+
+    // removal of confusions between similar filenames. like "Banana" and "nana"
+    // here we compare for the whole parts inside slashes
+    if (matchingPaths.length > 1) {
+      const indexesNotMatching = new Set<number>();
+      let i = 0;
+      for (const possiblePath of matchingPaths) {
+        const pathSplit = possiblePath.split('/');
+        const linkSplit = link.split('/');
+
+        while (linkSplit.length >= 1) {
+          const lastPart = linkSplit.pop();
+          const lastPartPath = pathSplit.pop();
+
+          if (lastPart !== lastPartPath) {
+            indexesNotMatching.add(i);
+            break;
+          }
+        }
+        i++;
+      }
+
+      matchingPaths = matchingPaths.filter((_, index) => !indexesNotMatching.has(index));
+    }
+
+    // removal of confusions between similar paths. like "Furniture/Toilet" - "Toilet" - "+/Toilet"
+    // now it definitely has the ending part similar. We need to get the shortest one in length.
+    if (matchingPaths.length > 1) {
+      const lengths = matchingPaths.map((p) => p.length);
+      const minLength = Math.min(...lengths);
+      matchingPaths = matchingPaths.filter((p) => p.length === minLength);
+    }
+
+    const path = matchingPaths[0];
+
+    if (path) {
+      const page = expandPage(dv.page(path + '.md'), settings, false);
       pages.push({
         ...page,
-        uniqueLinkedName: getEndingStringSimilarity(filePathWithoutExtension, linksSet[foundLink]),
+        uniqueLinkedName: getEndingStringSimilarity(path, link),
       });
-      linksSet.splice(foundLink, 1);
     }
   }
 

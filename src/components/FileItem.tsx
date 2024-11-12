@@ -57,7 +57,7 @@ const FileItem = (props: IFileItemProps) => {
         onAuxClick={(ev) => onClickFile(ev, props.page, true)}
       >
         {props.page.isMoc && <LayoutTemplate size={16} />}
-        {props.page.file.name}
+        {props.page.uniqueLinkedName ?? props.page.file.name}
       </div>
       {props.moveCursorToFile && (
         <div className="flex-grow-0">
