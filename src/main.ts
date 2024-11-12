@@ -85,6 +85,7 @@ export default class FileLinksHelperPlugin extends Plugin {
     const leaves = this.app.workspace.getLeavesOfType(FILE_LINKS_HELPER_VIEW_ID);
     if (leaves.length > 0) {
       const leaf = leaves[0];
+      leaf.getViewState()
       return (leaf as any).width > 0;
     } else {
       return false;

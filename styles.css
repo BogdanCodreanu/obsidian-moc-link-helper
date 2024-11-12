@@ -730,6 +730,11 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
   border-bottom-right-radius: 0px;
 }
 
+.moc-link-helper .rounded-t-none {
+  border-top-left-radius: 0px;
+  border-top-right-radius: 0px;
+}
+
 .moc-link-helper .border {
   border-width: 1px;
 }
@@ -817,6 +822,18 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 
 .moc-link-helper .bg-base-5 {
   background-color: var(--color-base-05);
+}
+
+.moc-link-helper .bg-base-10 {
+  background-color: var(--color-base-10);
+}
+
+.moc-link-helper .\!bg-base-10 {
+  background-color: var(--color-base-10) !important;
+}
+
+.moc-link-helper .\!bg-base-5 {
+  background-color: var(--color-base-05) !important;
 }
 
 .moc-link-helper .p-m {

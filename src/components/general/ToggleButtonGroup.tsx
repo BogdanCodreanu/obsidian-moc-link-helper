@@ -23,7 +23,7 @@ const ToggleButtonGroup = (props: IToggleButtonGroupProps) => {
             className={`flex w-full items-center gap-xs p-m text-xs ${
               isSelected
                 ? 'cursor-default !bg-base-25 font-bold !shadow-none'
-                : 'text-text-accent'
+                : 'text-text-accent !bg-base-5'
             } ${
               index === 0
                 ? 'rounded-l-lg rounded-r-none'

@@ -29,7 +29,7 @@ const SELECTION_UPDATE_INTERVAL = 500;
 export const SideView = () => {
   const { plugin, view } = useApp();
 
-  const [activeFile, setActiveFile] = useState<DvPage | undefined>(undefined);
+  const [activePage, setActiveFile] = useState<DvPage | undefined>(undefined);
   const [screen, setScreen] = useState<SCREENS>('OUTLINKS');
   const [outNotesView, setOutNotesView] = useState<OutNotesView>('All');
   const [selectedPages, setSelectedPages] = useState<DvPage[]>([]);
@@ -41,11 +41,11 @@ export const SideView = () => {
   const [dataviewReady, setDataviewReady] = useState(plugin.isDataviewReady);
 
   const allOutNotes = useMemo<DvPage[]>(() => {
-    if (!activeFile || !dataviewReady) {
+    if (!activePage || !dataviewReady) {
       return [];
     }
-    return activeFile.outPages;
-  }, [activeFile, dataviewReady]);
+    return activePage.outPages;
+  }, [activePage, dataviewReady]);
 
   const childOutNotes = useMemo<DvPage[]>(() => {
     return allOutNotes.filter((p) => !p.isMoc);
@@ -56,27 +56,27 @@ export const SideView = () => {
   }, [allOutNotes]);
 
   const inPagesNotInActiveFile = useMemo<DvPage[]>(() => {
-    if (!activeFile || !dataviewReady) {
+    if (!activePage || !dataviewReady) {
       return [];
     }
 
-    return activeFile.inPages.filter(
+    return activePage.inPages.filter(
       (p) =>
         p.upFiles.length > 0 &&
-        p.upFiles.some((f) => f.file.path === activeFile.file.path) &&
-        !activeFile.outPages.some((f) => f.file.path === p.file.path),
+        p.upFiles.some((f) => f.file.path === activePage.file.path) &&
+        !activePage.outPages.some((f) => f.file.path === p.file.path),
     );
-  }, [activeFile, dataviewReady]);
+  }, [activePage, dataviewReady]);
 
   const indirectParents = useMemo<DvPage[]>(() => {
-    if (!activeFile || !dataviewReady || activeFile.isMoc) {
+    if (!activePage || !dataviewReady || activePage.isMoc) {
       return [];
     }
 
-    return activeFile.inPages.filter(
-      (p) => p.isMoc && !activeFile.upFiles.map((f) => f.file.path).includes(p.file.path),
+    return activePage.inPages.filter(
+      (p) => p.isMoc && !activePage.upFiles.map((f) => f.file.path).includes(p.file.path),
     );
-  }, [activeFile, dataviewReady]);
+  }, [activePage, dataviewReady]);
 
   const shownNotes =
     outNotesView === 'All' ? allOutNotes : outNotesView === 'Notes' ? childOutNotes : mocOutNotes;
@@ -109,9 +109,9 @@ export const SideView = () => {
       return;
     }
 
-    if (!activeFile) {
+    if (!activePage) {
       const interval = setInterval(() => {
-        if (!activeFile && dataviewReady) {
+        if (!activePage && dataviewReady) {
           const page = getCurrentOpenFile(plugin);
           if (page) {
             expandPage(page, plugin.settings);
@@ -122,7 +122,7 @@ export const SideView = () => {
 
       return () => clearInterval(interval);
     }
-  }, [activeFile, isShown, dataviewReady]);
+  }, [activePage, isShown, dataviewReady]);
 
   useEffect(() => {
     if (!dataviewReady) {
@@ -144,7 +144,7 @@ export const SideView = () => {
 
       const activeEditor = plugin.app.workspace.activeEditor;
 
-      if (!activeEditor || !activeEditor.editor || !activeFile) {
+      if (!activeEditor || !activeEditor.editor || !activePage) {
         if (selectedPages.length > 0) {
           const dv = getAPI();
           setSelectedPages((pages) =>
@@ -183,14 +183,14 @@ export const SideView = () => {
           { line: maxLine + 1, ch: 0 },
         );
 
-        const files = getFilesFromText(currentText, activeFile.outPages, plugin.settings);
+        const files = getFilesFromText(currentText, activePage.outPages, plugin.settings);
         setSelectedPages(files);
       } else {
         setSelectedPages([]);
       }
     }, SELECTION_UPDATE_INTERVAL);
     return () => clearInterval(intervalId);
-  }, [activeFile, isShown, selectedLine, dataviewReady]);
+  }, [activePage, isShown, selectedLine, dataviewReady]);
 
   const onScreenChange = (screen: SCREENS) => {
     setScreen(screen);
@@ -201,26 +201,26 @@ export const SideView = () => {
   };
 
   const addUpLinkToNotes = async (notes: DvPage[]) => {
-    if (!activeFile) {
+    if (!activePage) {
       return;
     }
     const allFiles = plugin.app.vault.getAllLoadedFiles();
     await Promise.all(
-      notes.map((n) => addUpLinkToNote(n, activeFile, plugin.app, plugin.settings, allFiles)),
+      notes.map((n) => addUpLinkToNote(n, activePage, plugin.app, plugin.settings, allFiles)),
     );
   };
 
   const removeUpLinkFromNotes = async (notes: DvPage[]) => {
-    if (!activeFile) {
+    if (!activePage) {
       return;
     }
     await Promise.all(
-      notes.map((n) => removeUpLinkFromNote(n, activeFile, plugin.app, plugin.settings)),
+      notes.map((n) => removeUpLinkFromNote(n, activePage, plugin.app, plugin.settings)),
     );
   };
 
   const moveCursorToFile = (page: DvPage) => {
-    if (!currentFileEditor || !currentFileEditor.editor || !activeFile) {
+    if (!currentFileEditor || !currentFileEditor.editor || !activePage) {
       return;
     }
 
@@ -238,9 +238,8 @@ export const SideView = () => {
     const filesByLines: { [line: number]: DvPage[] } = {};
     const linesByFilePath: { [path: string]: number[] } = {};
 
-
     textSplit.forEach((line, index) => {
-      const pages = getFilesFromText(line, activeFile.outPages, plugin.settings);
+      const pages = getFilesFromText(line, activePage.outPages, plugin.settings);
       if (pages.length === 0) {
         return;
       }
@@ -273,7 +272,7 @@ export const SideView = () => {
   };
 
   const insertNoteAtCursorPosition = async (note: DvPage) => {
-    if (!currentFileEditor || !currentFileEditor.editor || !activeFile) {
+    if (!currentFileEditor || !currentFileEditor.editor || !activePage) {
       new Notice('No active editor or active file. Click inside the text file to fix.');
       return;
     }
@@ -281,7 +280,7 @@ export const SideView = () => {
     const cursor = currentFileEditor.editor.getCursor();
     const lineNumber = cursor.line;
 
-    const file = plugin.app.vault.getFileByPath(activeFile.file.path);
+    const file = plugin.app.vault.getFileByPath(activePage.file.path);
     const allFiles = plugin.app.vault.getAllLoadedFiles();
     if (!file) {
       return;
@@ -313,7 +312,7 @@ export const SideView = () => {
     );
   }
 
-  if (!activeFile) {
+  if (!activePage) {
     return (
       <div className="moc-link-helper">
         <NoFileSelectedScreen />
@@ -321,11 +320,11 @@ export const SideView = () => {
     );
   }
 
-  if (!activeFile.isMoc) {
+  if (!activePage.isMoc) {
     return (
       <div className="moc-link-helper">
         <div className="fixed bottom-0 left-0 right-0 top-[12px] flex flex-col gap-s overflow-auto p-m">
-          <PageTitle page={activeFile} />
+          <PageTitle page={activePage} />
           <Description
             text={
               <div className="text-xs text-base-60">
@@ -336,12 +335,12 @@ export const SideView = () => {
           />
           <hr />
 
-          {activeFile.upFiles.length > 0 ? (
+          {activePage.upFiles.length > 0 ? (
             <div className="mt-s flex flex-col gap-s">
               <div className="flex flex-row items-center gap-s text-lg font-bold">Parent notes</div>
               <ListOfItems
-                pages={activeFile.upFiles}
-                parentPage={activeFile}
+                pages={activePage.upFiles}
+                parentPage={activePage}
                 type="TITLE_ONLY"
                 preserveBg
               />
@@ -374,12 +373,12 @@ export const SideView = () => {
                 )}
                 <ListOfItems
                   pages={indirectParents}
-                  parentPage={activeFile}
+                  parentPage={activePage}
                   type="AS_MISSING_PARENT"
                   preserveBg
                   addUpLink={(page) =>
                     addUpLinkToNote(
-                      activeFile,
+                      activePage,
                       page,
                       plugin.app,
                       plugin.settings,
@@ -398,7 +397,7 @@ export const SideView = () => {
   return (
     <div className="moc-link-helper">
       <div className="fixed bottom-0 left-0 right-0 top-[12px] flex flex-col gap-s p-m">
-        <PageTitle page={activeFile} />
+        <PageTitle page={activePage} />
 
         <ToggleButtonGroup
           options={[
@@ -427,7 +426,7 @@ export const SideView = () => {
 
                 <LinkButtons
                   pages={selectedPages}
-                  parentPage={activeFile}
+                  parentPage={activePage}
                   useSelectedFiles={false}
                   addUpLinkToNotes={addUpLinkToNotes}
                   removeUpLinkFromNotes={removeUpLinkFromNotes}
@@ -435,7 +434,7 @@ export const SideView = () => {
                 />
                 <ListOfItems
                   pages={selectedPages}
-                  parentPage={activeFile}
+                  parentPage={activePage}
                   type="SIMPLE"
                   preserveBg
                 />
@@ -464,7 +463,7 @@ export const SideView = () => {
                   />
                 )}
 
-                <div className="flex flex-col overflow-hidden">
+                <div>
                   <ToggleButtonGroup
                     options={[
                       { label: 'All', value: 'All' },
@@ -475,22 +474,39 @@ export const SideView = () => {
                     onOptionSelected={onOutNotesViewChange}
                     mergeBottom
                   />
+                  <div className="flex flex-col gap-xs overflow-hidden rounded-lg rounded-t-none border-1 border-t-0 border-base-50 bg-base-25 p-s">
+                    <LinkButtons
+                      pages={shownNotes}
+                      parentPage={activePage}
+                      useSelectedFiles={false}
+                      addUpLinkToNotes={addUpLinkToNotes}
+                      removeUpLinkFromNotes={removeUpLinkFromNotes}
+                      ignoreMoc={outNotesView === 'All'}
+                      preserveBg
+                    />
 
-                  <LinkButtons
-                    pages={shownNotes}
-                    parentPage={activeFile}
-                    useSelectedFiles={false}
-                    addUpLinkToNotes={addUpLinkToNotes}
-                    removeUpLinkFromNotes={removeUpLinkFromNotes}
-                    ignoreMoc={outNotesView === 'All'}
-                  />
+                    {plugin.settings.showHelpText && outNotesView === 'All' && (
+                      <Description
+                        text={
+                          <div>
+                            Linking operations will not affect{' '}
+                            <span className="font-semibold text-text-accent">
+                              {plugin.settings.parentTag}
+                            </span>{' '}
+                            notes in <b>All</b> view.
+                          </div>
+                        }
+                      />
+                    )}
 
-                  <ListOfItems
-                    pages={shownNotes}
-                    moveCursorToFile={activeFile ? moveCursorToFile : undefined}
-                    parentPage={activeFile}
-                    type="SIMPLE"
-                  />
+                    <ListOfItems
+                      pages={shownNotes}
+                      moveCursorToFile={activePage ? moveCursorToFile : undefined}
+                      parentPage={activePage}
+                      type="SIMPLE"
+                      preserveBg
+                    />
+                  </div>
                 </div>
               </>
             )}
@@ -532,7 +548,7 @@ export const SideView = () => {
 
                 <ListOfItems
                   pages={inPagesNotInActiveFile}
-                  parentPage={activeFile}
+                  parentPage={activePage}
                   type="AS_UNADDED"
                   preserveBg
                   insertAtCursor={insertNoteAtCursorPosition}
