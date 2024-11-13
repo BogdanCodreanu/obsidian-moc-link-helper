@@ -12,18 +12,23 @@ export class ChangelogModal extends Modal {
 
   async onOpen(): Promise<void> {
     const { contentEl } = this;
-    const notes = await getReleaseNotes();
-    const currentVersion = getCurrentVersion();
+    try {
+      const notes = await getReleaseNotes();
+      const currentVersion = getCurrentVersion();
 
-    const contentContainer = contentEl.createDiv();
+      const contentContainer = contentEl.createDiv();
 
-    let stringContent = `# Changelog\n\n`;
+      let stringContent = `# Changelog\n\n`;
 
-    notes.forEach((note) => {
-      stringContent += `## v${note.version}${note.version === currentVersion ? ' - Current version' : ''}\n${note.changes}\n\n`;
-    });
+      notes.forEach((note) => {
+        stringContent += `## v${note.version}${note.version === currentVersion ? ' - Current version' : ''}\n${note.changes}\n\n`;
+      });
 
-    MarkdownRenderer.render(this.app, stringContent, contentContainer, '/', this.plugin);
+      MarkdownRenderer.render(this.app, stringContent, contentContainer, '/', this.plugin);
+    } catch (e) {
+      console.error(e);
+      contentEl.createEl('p', { text: 'Failed to retrieve changelog' });
+    }
   }
 
   onClose(): void {

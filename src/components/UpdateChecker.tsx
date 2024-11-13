@@ -11,9 +11,11 @@ export const UpdateChecker = () => {
   const { plugin } = useApp();
 
   useEffect(() => {
-    getLatestVersion().then((version) => {
-      setLatestVersion(version);
-    });
+    getLatestVersion()
+      .then((version) => {
+        setLatestVersion(version);
+      })
+      .catch(() => {});
   }, []);
 
   const openChangelog = () => {
