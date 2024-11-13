@@ -24,9 +24,9 @@ export const UpdateChecker = () => {
 
   if (!latestVersion || !isNewerVersion(currentVersion, latestVersion)) {
     return (
-      <div className="absolute flex w-full flex-row justify-end text-base-60 hover:cursor-pointer hover:underline">
+      <div className="absolute flex w-full flex-row text-base-60 hover:cursor-pointer hover:underline">
         <div
-          className="mr-[16px] mt-[-10px] flex flex-row items-center gap-xs"
+          className="mt-[-10px] flex flex-row items-center gap-xs"
           aria-label="View changelog"
           onClick={openChangelog}
         >
@@ -37,9 +37,9 @@ export const UpdateChecker = () => {
   }
 
   return (
-    <div className="absolute flex w-full flex-row justify-end text-green hover:cursor-pointer hover:underline">
+    <div className="absolute flex w-full flex-row text-green hover:cursor-pointer hover:underline">
       <div
-        className="mr-[16px] mt-[-10px] flex flex-row items-center gap-xs"
+        className="mt-[-10px] flex flex-row items-center gap-xs"
         aria-label="Plugin update available"
         onClick={openChangelog}
       >

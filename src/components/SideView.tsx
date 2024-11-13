@@ -131,7 +131,7 @@ export const SideView = () => {
     subscribeToEvents();
   }, [dataviewReady]);
 
-  // UPDATE ACTIVE FILE SELECTION
+  // UPDATE SELECTION OF NOTES BASED ON TEXT SELECTION
   useEffect(() => {
     if (!isShown || !plugin.isViewVisible() || !dataviewReady) {
       return;

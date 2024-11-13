@@ -180,8 +180,10 @@ export const generateUniqueLinkedName = (page: DvPage, allFiles: TAbstractFile[]
   const filePathParts = page.file.path.split('/');
 
   let lastPart = filePathParts.pop();
-  let pathsEndingSame = allPaths.filter((f) => f.endsWith(lastPart!));
+  let pathsEndingSame = allPaths.filter((f) => f.split('/').pop() === lastPart);
+  console.log('pathsEndingSame', pathsEndingSame);
 
+  let i = 2;
   while (lastPart && pathsEndingSame.length > 1) {
     if (pathsEndingSame.length === 1) {
       const withoutExtension = lastPart.replace(/\.[^/.]+$/, '');
@@ -189,7 +191,12 @@ export const generateUniqueLinkedName = (page: DvPage, allFiles: TAbstractFile[]
     }
 
     lastPart = `${filePathParts.pop()}/${lastPart}`;
-    pathsEndingSame = allPaths.filter((f) => f.endsWith(lastPart!));
+    pathsEndingSame = allPaths.filter((f) => {
+      const endingPath = f.split('/').slice(-i).join('/');
+      return endingPath === lastPart;
+    });
+    console.log('pathsEndingSame', pathsEndingSame);
+    i++;
   }
 
   if (pathsEndingSame.length === 1) {
