@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 import { IconName, ItemView, WorkspaceLeaf } from 'obsidian';
 import { Root, createRoot } from 'react-dom/client';
 import { SideView } from '../components/SideView';
+import { UpdateChecker } from '../components/UpdateChecker';
 import { AppContext } from '../context/AppContext';
 import FileLinksHelperPlugin from 'src/main';
 import { getCurrentOpenFile } from '../utils/workspaceUtils';
@@ -16,7 +17,7 @@ class LinksHelperSideView extends ItemView {
     private plugin: FileLinksHelperPlugin,
   ) {
     super(leaf);
-    
+
     this.registerEvent(
       plugin.app.metadataCache.on('dataview:index-ready', () => {
         this.onOpen();
@@ -69,7 +70,10 @@ class LinksHelperSideView extends ItemView {
             initialFile: undefined,
           }}
         >
-          <SideView />
+          <div className="moc-link-helper">
+            <UpdateChecker />
+            <SideView />
+          </div>
         </AppContext.Provider>
       </StrictMode>,
     );

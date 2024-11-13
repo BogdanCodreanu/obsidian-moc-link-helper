@@ -24,6 +24,7 @@ module.exports = {
       },
     },
     margin: {
+      auto: 'auto',
       xs: '.236em',
       s: '.345em',
       m: '.786096em',

@@ -29,7 +29,7 @@ const SELECTION_UPDATE_INTERVAL = 500;
 export const SideView = () => {
   const { plugin, view } = useApp();
 
-  const [activePage, setActiveFile] = useState<DvPage | undefined>(undefined);
+  const [activePage, setActivePage] = useState<DvPage | undefined>(undefined);
   const [screen, setScreen] = useState<SCREENS>('OUTLINKS');
   const [outNotesView, setOutNotesView] = useState<OutNotesView>('All');
   const [selectedPages, setSelectedPages] = useState<DvPage[]>([]);
@@ -84,7 +84,7 @@ export const SideView = () => {
   const subscribeToEvents = debounce(() => {
     view.registerEvent(
       plugin.app.workspace.on('moc-link-helper:on-change-active-file', (file: DvPage) => {
-        setActiveFile(file);
+        setActivePage(file);
       }),
     );
 
@@ -98,7 +98,7 @@ export const SideView = () => {
       plugin.app.workspace.on('moc-link-helper:on-shown-view-changed', (shown: boolean) => {
         setIsShown(shown);
         if (!shown) {
-          setActiveFile(undefined);
+          setActivePage(undefined);
         }
       }),
     );
@@ -115,7 +115,7 @@ export const SideView = () => {
           const page = getCurrentOpenFile(plugin);
           if (page) {
             expandPage(page, plugin.settings);
-            setActiveFile(page);
+            setActivePage(page);
           }
         }
       }, 500);
@@ -303,267 +303,252 @@ export const SideView = () => {
 
   if (!dataviewReady) {
     return (
-      <div className="moc-link-helper">
-        <Description
-          bigCenterIcon={<Frown size={32} />}
-          text="Dataview plugin not detected. This plugin requires Dataview to work. If you just installed the plugin, please reload the app."
-        />
-      </div>
+      <Description
+        bigCenterIcon={<Frown size={32} />}
+        text="Dataview plugin not detected. This plugin requires Dataview to work. If you just installed the plugin, please reload the app."
+      />
     );
   }
 
   if (!activePage) {
-    return (
-      <div className="moc-link-helper">
-        <NoFileSelectedScreen />
-      </div>
-    );
+    return <NoFileSelectedScreen />;
   }
 
   if (!activePage.isMoc) {
     return (
-      <div className="moc-link-helper">
-        <div className="fixed bottom-0 left-0 right-0 top-[12px] flex flex-col gap-s overflow-auto p-m">
-          <PageTitle page={activePage} />
-          <Description
-            text={
-              <div className="text-xs text-base-60">
-                This is a child note. To work with notes that link to here, tag this note with{' '}
-                <span className="font-semibold text-text-accent">{plugin.settings.parentTag}</span>.
+      <div className="fixed bottom-0 left-0 right-0 top-[12px] flex flex-col gap-s overflow-auto p-m">
+        <PageTitle page={activePage} />
+        <Description
+          text={
+            <div className="text-xs text-base-60">
+              This is a child note. To work with notes that link to here, tag this note with{' '}
+              <span className="font-semibold text-text-accent">{plugin.settings.parentTag}</span>.
+            </div>
+          }
+        />
+        <hr />
+
+        {activePage.upFiles.length > 0 ? (
+          <div className="mt-s flex flex-col gap-s">
+            <div className="flex flex-row items-center gap-s text-lg font-bold">Parent notes</div>
+            <ListOfItems
+              pages={activePage.upFiles}
+              parentPage={activePage}
+              type="TITLE_ONLY"
+              preserveBg
+            />
+          </div>
+        ) : (
+          <div className="flex w-full flex-col items-center justify-center pt-xl text-base-70">
+            <Link2Off size={32} />
+            <div className="mx-xs mb-s text-sm">Unlinked note</div>
+          </div>
+        )}
+
+        {indirectParents.length > 0 && (
+          <>
+            <div className="mx-m mt-s flex flex-col gap-s rounded-md border-1 border-base-70 p-m">
+              <div className="flex flex-row items-center gap-s text-lg font-bold text-base-70">
+                Indirect parents
               </div>
-            }
-          />
-          <hr />
-
-          {activePage.upFiles.length > 0 ? (
-            <div className="mt-s flex flex-col gap-s">
-              <div className="flex flex-row items-center gap-s text-lg font-bold">Parent notes</div>
-              <ListOfItems
-                pages={activePage.upFiles}
-                parentPage={activePage}
-                type="TITLE_ONLY"
-                preserveBg
-              />
-            </div>
-          ) : (
-            <div className="flex w-full flex-col items-center justify-center pt-xl text-base-70">
-              <Link2Off size={32} />
-              <div className="mx-xs mb-s text-sm">Unlinked note</div>
-            </div>
-          )}
-
-          {indirectParents.length > 0 && (
-            <>
-              <div className="mx-m mt-s flex flex-col gap-s rounded-md border-1 border-base-70 p-m">
-                <div className="flex flex-row items-center gap-s text-lg font-bold text-base-70">
-                  Indirect parents
-                </div>
-                {plugin.settings.showHelpText && (
-                  <Description
-                    text={
-                      <div>
-                        Parent notes that contain this note, but aren't added as{' '}
-                        <span className="font-semibold text-text-accent">
-                          {plugin.settings.upPropName}
-                        </span>
-                        .
-                      </div>
-                    }
-                  />
-                )}
-                <ListOfItems
-                  pages={indirectParents}
-                  parentPage={activePage}
-                  type="AS_MISSING_PARENT"
-                  preserveBg
-                  addUpLink={(page) =>
-                    addUpLinkToNote(
-                      activePage,
-                      page,
-                      plugin.app,
-                      plugin.settings,
-                      plugin.app.vault.getAllLoadedFiles(),
-                    )
+              {plugin.settings.showHelpText && (
+                <Description
+                  text={
+                    <div>
+                      Parent notes that contain this note, but aren't added as{' '}
+                      <span className="font-semibold text-text-accent">
+                        {plugin.settings.upPropName}
+                      </span>
+                      .
+                    </div>
                   }
                 />
-              </div>
-            </>
-          )}
-        </div>
+              )}
+              <ListOfItems
+                pages={indirectParents}
+                parentPage={activePage}
+                type="AS_MISSING_PARENT"
+                preserveBg
+                addUpLink={(page) =>
+                  addUpLinkToNote(
+                    activePage,
+                    page,
+                    plugin.app,
+                    plugin.settings,
+                    plugin.app.vault.getAllLoadedFiles(),
+                  )
+                }
+              />
+            </div>
+          </>
+        )}
       </div>
     );
   }
 
   return (
-    <div className="moc-link-helper">
-      <div className="fixed bottom-0 left-0 right-0 top-[12px] flex flex-col gap-s p-m">
-        <PageTitle page={activePage} />
+    <div className="fixed bottom-0 left-0 right-0 top-[12px] flex flex-col gap-s p-m">
+      <PageTitle page={activePage} />
 
-        <ToggleButtonGroup
-          options={[
-            { label: 'Notes included', value: 'OUTLINKS' },
-            {
-              label: 'Missing notes',
-              value: 'INLINKS',
-              warning: inPagesNotInActiveFile.length > 0,
-            },
-          ]}
-          selectedOption={screen}
-          onOptionSelected={onScreenChange}
-        />
+      <ToggleButtonGroup
+        options={[
+          { label: 'Notes included', value: 'OUTLINKS' },
+          {
+            label: 'Missing notes',
+            value: 'INLINKS',
+            warning: inPagesNotInActiveFile.length > 0,
+          },
+        ]}
+        selectedOption={screen}
+        onOptionSelected={onScreenChange}
+      />
 
-        {screen === 'OUTLINKS' ? (
-          <div
-            className={`flex flex-col gap-xs overflow-auto rounded-xl border-dotted p-s ${
-              selectedPages.length > 0
-                ? 'border-2 border-base-50 border-opacity-100 bg-base-25 p-m'
-                : ''
-            }`}
-          >
-            {selectedPages && selectedPages.length > 0 ? (
-              <>
-                <Header title="Selected notes" icon={<Notebook size={16} />} />
+      {screen === 'OUTLINKS' ? (
+        <div
+          className={`flex flex-col gap-xs overflow-auto rounded-xl border-dotted p-s ${
+            selectedPages.length > 0
+              ? 'border-2 border-base-50 border-opacity-100 bg-base-25 p-m'
+              : ''
+          }`}
+        >
+          {selectedPages && selectedPages.length > 0 ? (
+            <>
+              <Header title="Selected notes" icon={<Notebook size={16} />} />
 
-                <LinkButtons
-                  pages={selectedPages}
-                  parentPage={activePage}
-                  useSelectedFiles={false}
-                  addUpLinkToNotes={addUpLinkToNotes}
-                  removeUpLinkFromNotes={removeUpLinkFromNotes}
-                  preserveBg
-                />
-                <ListOfItems
-                  pages={selectedPages}
-                  parentPage={activePage}
-                  type="SIMPLE"
-                  preserveBg
-                />
-              </>
-            ) : (
-              <>
-                {plugin.settings.showHelpText && (
-                  <Description
-                    text={
-                      <div>
-                        Notes included in this{' '}
-                        <span className="font-semibold text-text-accent">
-                          {plugin.settings.parentTag}
-                        </span>{' '}
-                        parent note. You can quickly modify their{' '}
-                        <span className="font-semibold text-text-accent">
-                          {plugin.settings.upPropName}
-                        </span>{' '}
-                        link in relation to this parent note. You can also
-                        <span className="mx-xs inline-block">
-                          <TextSelect size={15} />
-                        </span>
-                        select text to choose specific notes.
-                      </div>
-                    }
-                  />
-                )}
-
-                <div>
-                  <ToggleButtonGroup
-                    options={[
-                      { label: 'All', value: 'All' },
-                      { label: 'Notes', value: 'Notes' },
-                      { label: plugin.settings.parentTag, value: 'MOC' },
-                    ]}
-                    selectedOption={outNotesView}
-                    onOptionSelected={onOutNotesViewChange}
-                    mergeBottom
-                  />
-                  <div className="flex flex-col gap-xs overflow-hidden rounded-lg rounded-t-none border-1 border-t-0 border-base-50 bg-base-25 p-s">
-                    <LinkButtons
-                      pages={shownNotes}
-                      parentPage={activePage}
-                      useSelectedFiles={false}
-                      addUpLinkToNotes={addUpLinkToNotes}
-                      removeUpLinkFromNotes={removeUpLinkFromNotes}
-                      ignoreMoc={outNotesView === 'All'}
-                      preserveBg
-                    />
-
-                    {plugin.settings.showHelpText && outNotesView === 'All' && (
-                      <Description
-                        text={
-                          <div>
-                            Linking operations will not affect{' '}
-                            <span className="font-semibold text-text-accent">
-                              {plugin.settings.parentTag}
-                            </span>{' '}
-                            notes in <b>All</b> view.
-                          </div>
-                        }
-                      />
-                    )}
-
-                    <ListOfItems
-                      pages={shownNotes}
-                      moveCursorToFile={activePage ? moveCursorToFile : undefined}
-                      parentPage={activePage}
-                      type="SIMPLE"
-                      preserveBg
-                    />
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-        ) : screen === 'INLINKS' ? (
-          <div className={`flex flex-col gap-xs overflow-auto rounded-xl border-dotted p-s`}>
-            {inPagesNotInActiveFile.length > 0 ? (
-              <>
-                {plugin.settings.showHelpText && (
-                  <Description
-                    text={
-                      <div>
-                        Here are notes that have{' '}
-                        <span className="font-semibold text-text-accent">
-                          {plugin.settings.upPropName}
-                        </span>{' '}
-                        linking to this note, but aren't added here.
-                      </div>
-                    }
-                  />
-                )}
-
-                <div className="flex w-full flex-row justify-end">
-                  <Button
-                    onClick={() => {
-                      insertAllNotesAtCursorPosition(inPagesNotInActiveFile);
-                    }}
-                    icon={<TextCursorInput size={16} />}
-                    label="Insert all at cursor"
-                    className="mx-xs text-green"
-                    isDisabled={!currentFileEditor}
-                    ariaLabel={
-                      !currentFileEditor
-                        ? 'No active editor. Click inside the text file to fix.'
-                        : undefined
-                    }
-                  />
-                </div>
-
-                <ListOfItems
-                  pages={inPagesNotInActiveFile}
-                  parentPage={activePage}
-                  type="AS_UNADDED"
-                  preserveBg
-                  insertAtCursor={insertNoteAtCursorPosition}
-                />
-              </>
-            ) : (
-              <Description
-                text="All notes that link to this note are already included."
-                className="text-green"
-                bigCenterIcon={<CheckCircle size={32} />}
+              <LinkButtons
+                pages={selectedPages}
+                parentPage={activePage}
+                useSelectedFiles={false}
+                addUpLinkToNotes={addUpLinkToNotes}
+                removeUpLinkFromNotes={removeUpLinkFromNotes}
+                preserveBg
               />
-            )}
-          </div>
-        ) : null}
-      </div>
+              <ListOfItems pages={selectedPages} parentPage={activePage} type="SIMPLE" preserveBg />
+            </>
+          ) : (
+            <>
+              {plugin.settings.showHelpText && (
+                <Description
+                  text={
+                    <div>
+                      Notes included in this{' '}
+                      <span className="font-semibold text-text-accent">
+                        {plugin.settings.parentTag}
+                      </span>{' '}
+                      parent note. You can quickly modify their{' '}
+                      <span className="font-semibold text-text-accent">
+                        {plugin.settings.upPropName}
+                      </span>{' '}
+                      link in relation to this parent note. You can also
+                      <span className="mx-xs inline-block">
+                        <TextSelect size={15} />
+                      </span>
+                      select text to choose specific notes.
+                    </div>
+                  }
+                />
+              )}
+
+              <div>
+                <ToggleButtonGroup
+                  options={[
+                    { label: 'All', value: 'All' },
+                    { label: 'Notes', value: 'Notes' },
+                    { label: plugin.settings.parentTag, value: 'MOC' },
+                  ]}
+                  selectedOption={outNotesView}
+                  onOptionSelected={onOutNotesViewChange}
+                  mergeBottom
+                />
+                <div className="flex flex-col gap-xs overflow-hidden rounded-lg rounded-t-none border-1 border-t-0 border-base-50 bg-base-25 p-s">
+                  <LinkButtons
+                    pages={shownNotes}
+                    parentPage={activePage}
+                    useSelectedFiles={false}
+                    addUpLinkToNotes={addUpLinkToNotes}
+                    removeUpLinkFromNotes={removeUpLinkFromNotes}
+                    ignoreMoc={outNotesView === 'All'}
+                    preserveBg
+                  />
+
+                  {plugin.settings.showHelpText && outNotesView === 'All' && (
+                    <Description
+                      text={
+                        <div>
+                          Linking operations will not affect{' '}
+                          <span className="font-semibold text-text-accent">
+                            {plugin.settings.parentTag}
+                          </span>{' '}
+                          notes in <b>All</b> view.
+                        </div>
+                      }
+                    />
+                  )}
+
+                  <ListOfItems
+                    pages={shownNotes}
+                    moveCursorToFile={activePage ? moveCursorToFile : undefined}
+                    parentPage={activePage}
+                    type="SIMPLE"
+                    preserveBg
+                  />
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      ) : screen === 'INLINKS' ? (
+        <div className={`flex flex-col gap-xs overflow-auto rounded-xl border-dotted p-s`}>
+          {inPagesNotInActiveFile.length > 0 ? (
+            <>
+              {plugin.settings.showHelpText && (
+                <Description
+                  text={
+                    <div>
+                      Here are notes that have{' '}
+                      <span className="font-semibold text-text-accent">
+                        {plugin.settings.upPropName}
+                      </span>{' '}
+                      linking to this note, but aren't added here.
+                    </div>
+                  }
+                />
+              )}
+
+              <div className="flex w-full flex-row justify-end">
+                <Button
+                  onClick={() => {
+                    insertAllNotesAtCursorPosition(inPagesNotInActiveFile);
+                  }}
+                  icon={<TextCursorInput size={16} />}
+                  label="Insert all at cursor"
+                  className="mx-xs text-green"
+                  isDisabled={!currentFileEditor}
+                  ariaLabel={
+                    !currentFileEditor
+                      ? 'No active editor. Click inside the text file to fix.'
+                      : undefined
+                  }
+                />
+              </div>
+
+              <ListOfItems
+                pages={inPagesNotInActiveFile}
+                parentPage={activePage}
+                type="AS_UNADDED"
+                preserveBg
+                insertAtCursor={insertNoteAtCursorPosition}
+              />
+            </>
+          ) : (
+            <Description
+              text="All notes that link to this note are already included."
+              className="text-green"
+              bigCenterIcon={<CheckCircle size={32} />}
+            />
+          )}
+        </div>
+      ) : null}
     </div>
   );
 };

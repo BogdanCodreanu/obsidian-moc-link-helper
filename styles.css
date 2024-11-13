@@ -558,6 +558,10 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
   position: fixed;
 }
 
+.moc-link-helper .absolute {
+  position: absolute;
+}
+
 .moc-link-helper .bottom-0 {
   bottom: 0px;
 }
@@ -586,6 +590,14 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 
 .moc-link-helper .mb-s {
   margin-bottom: .345em;
+}
+
+.moc-link-helper .mr-\[16px\] {
+  margin-right: 16px;
+}
+
+.moc-link-helper .mt-\[-10px\] {
+  margin-top: -10px;
 }
 
 .moc-link-helper .mt-s {
@@ -812,6 +824,10 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
   background-color: var(--color-base-25) !important;
 }
 
+.moc-link-helper .\!bg-base-5 {
+  background-color: var(--color-base-05) !important;
+}
+
 .moc-link-helper .bg-base-0 {
   background-color: var(--color-base-00);
 }
@@ -822,18 +838,6 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 
 .moc-link-helper .bg-base-5 {
   background-color: var(--color-base-05);
-}
-
-.moc-link-helper .bg-base-10 {
-  background-color: var(--color-base-10);
-}
-
-.moc-link-helper .\!bg-base-10 {
-  background-color: var(--color-base-10) !important;
-}
-
-.moc-link-helper .\!bg-base-5 {
-  background-color: var(--color-base-05) !important;
 }
 
 .moc-link-helper .p-m {
@@ -859,6 +863,10 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 
 .moc-link-helper .pt-xl {
   padding-top: 1.618em;
+}
+
+.moc-link-helper .text-\[10px\] {
+  font-size: 10px;
 }
 
 .moc-link-helper .text-lg {
@@ -949,6 +957,10 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 .moc-link-helper .settings-save-button {
   background-color: var(--color-accent-1) !important;
   color: var(--color-base-00) !important;
+}
+
+.moc-link-helper .hover\:cursor-pointer:hover {
+  cursor: pointer;
 }
 
 .moc-link-helper .hover\:text-text-accent:hover {

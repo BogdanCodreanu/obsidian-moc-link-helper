@@ -3,6 +3,7 @@ import LinksHelperSideView, { FILE_LINKS_HELPER_VIEW_ID } from './views/LinksHel
 import { DEFAULT_SETTINGS, PluginCustomSettings, SettingsTab } from './settings/pluginSettings';
 import { getCurrentOpenFile, getFileFromLeaf } from './utils/workspaceUtils';
 import { DvPage } from './utils/fileUtils';
+import { getAPI } from 'obsidian-dataview';
 
 export default class FileLinksHelperPlugin extends Plugin {
   public settings: PluginCustomSettings;
@@ -25,15 +26,13 @@ export default class FileLinksHelperPlugin extends Plugin {
       this.app.metadataCache.on('dataview:index-ready', () => {
         this.isDataviewReady = true;
         this.onLeafChange(undefined);
-
-        this.registerEvent(
-          this.app.workspace.on('active-leaf-change', this.onLeafChange.bind(this)),
-        );
-
-        this.registerEvent(
-          this.app.metadataCache.on('dataview:metadata-change', this.onMetadataChange.bind(this)),
-        );
       }),
+    );
+
+    this.registerEvent(this.app.workspace.on('active-leaf-change', this.onLeafChange.bind(this)));
+
+    this.registerEvent(
+      this.app.metadataCache.on('dataview:metadata-change', this.onMetadataChange.bind(this)),
     );
 
     this.addRibbonIcon('cable', 'Open MOC Link Helper View', this.activateView.bind(this));
@@ -45,6 +44,11 @@ export default class FileLinksHelperPlugin extends Plugin {
   }
 
   private onLayoutReady() {
+    // @ts-ignore
+    if (getAPI()?.index?._loaded) {
+      this.isDataviewReady = true;
+      this.onLeafChange(undefined);
+    }
   }
 
   async saveSettings() {
@@ -71,7 +75,9 @@ export default class FileLinksHelperPlugin extends Plugin {
   }
 
   private onLeafChange(leaf: WorkspaceLeaf | undefined) {
-    if (!leaf) return;
+    if (!leaf || !this.isDataviewReady) {
+      return;
+    }
     const page = getFileFromLeaf(leaf, this);
 
     if (page) {
@@ -85,7 +91,7 @@ export default class FileLinksHelperPlugin extends Plugin {
     const leaves = this.app.workspace.getLeavesOfType(FILE_LINKS_HELPER_VIEW_ID);
     if (leaves.length > 0) {
       const leaf = leaves[0];
-      leaf.getViewState()
+      leaf.getViewState();
       return (leaf as any).width > 0;
     } else {
       return false;
