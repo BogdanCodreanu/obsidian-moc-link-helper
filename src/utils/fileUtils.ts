@@ -181,7 +181,6 @@ export const generateUniqueLinkedName = (page: DvPage, allFiles: TAbstractFile[]
 
   let lastPart = filePathParts.pop();
   let pathsEndingSame = allPaths.filter((f) => f.split('/').pop() === lastPart);
-  console.log('pathsEndingSame', pathsEndingSame);
 
   let i = 2;
   while (lastPart && pathsEndingSame.length > 1) {
@@ -195,7 +194,6 @@ export const generateUniqueLinkedName = (page: DvPage, allFiles: TAbstractFile[]
       const endingPath = f.split('/').slice(-i).join('/');
       return endingPath === lastPart;
     });
-    console.log('pathsEndingSame', pathsEndingSame);
     i++;
   }
 

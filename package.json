@@ -1,71 +1,72 @@
 {
-	"name": "moc-link-helper",
-	"version": "1.1.6",
-	"licenses": [
-		{
-			"type": "MIT",
-			"url": "https://opensource.org/licenses/MIT"
-		}
-	],
-	"description": "Obsidian plugin that helps with some janitor-linking tasks.",
-	"main": "src/main.js",
-	"type": "module",
-	"scripts": {
-		"dev": "node esbuild.config.mjs",
-		"dev-all": "parallelshell \"npm run tailwind-watch\" \"npm run postcss-watch\" \"npm run dev\"",
-		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production && copy-files-from-to",
-		"postcss-watch": "postcss ./src/styles-tailwind.css -o ./styles.css --watch --verbose",
-		"tailwind-watch": "tailwindcss -i ./src/input.css -o ./src/styles-tailwind.css --watch",
-		"version": "node version-bump.mjs && git add manifest.json versions.json",
-		"publish": "gh release "
-	},
-	"copyFiles": [
-		{
-			"from": "styles.css",
-			"to": "dist/styles.css"
-		},
-		{
-			"from": "manifest.json",
-			"to": "dist/manifest.json"
-		},
-		{
-			"from": "main.js",
-			"to": "dist/main.js"
-		}
-	],
-	"copyFilesSettings": {
-		"whenFileExists": "overwrite"
-	},
-	"keywords": [],
-	"author": "",
-	"license": "MIT",
-	"devDependencies": {
-		"@types/node": "^16.11.6",
-		"@types/react": "^18.3.3",
-		"@types/react-dom": "^18.3.0",
-		"@typescript-eslint/eslint-plugin": "5.29.0",
-		"@typescript-eslint/parser": "5.29.0",
-		"autoprefixer": "^10.4.20",
-		"builtin-modules": "3.3.0",
-		"copy-files-from-to": "^3.11.0",
-		"esbuild": "0.17.3",
-		"esbuild-plugin-postcss2": "^0.1.2",
-		"obsidian": "latest",
-		"obsidian-dataview": "^0.5.67",
-		"parallelshell": "3.0.1",
-		"postcss": "^8.4.47",
-		"postcss-cli": "^11.0.0",
-		"postcss-prefix-selector": "^2.1.0",
-		"prettier": "^3.3.3",
-		"prettier-plugin-tailwindcss": "^0.6.6",
-		"tailwindcss": "^3.4.10",
-		"tslib": "2.4.0",
-		"typescript": "4.7.4"
-	},
-	"dependencies": {
-		"comlink": "^4.4.1",
-		"lucide-react": "^0.439.0",
-		"react": "^18.3.1",
-		"react-dom": "^18.3.1"
-	}
+  "name": "moc-link-helper",
+  "version": "1.1.8",
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  ],
+  "description": "Obsidian plugin that helps with some janitor-linking tasks.",
+  "main": "src/main.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node esbuild.config.mjs",
+    "dev-all": "parallelshell \"npm run tailwind-watch\" \"npm run postcss-watch\" \"npm run dev\"",
+    "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production && copy-files-from-to",
+    "postcss-watch": "postcss ./src/styles-tailwind.css -o ./styles.css --watch --verbose",
+    "tailwind-watch": "tailwindcss -i ./src/input.css -o ./src/styles-tailwind.css --watch",
+    "version": "node version-bump.mjs && git add manifest.json versions.json",
+    "sync-version": "node -e \"let manifest = require('./manifest.json'); let pkg = require('./package.json'); pkg.version = manifest.version; require('fs').writeFileSync('./package.json', JSON.stringify(pkg, null, 2));\" && npm install",
+    "create-release": "node -e \"let manifest = require('./manifest.json'); let version = manifest.version; require('child_process').execSync(`gh release create -F releaseNotes.md -d -t ${version} ${version} ./dist/manifest.json ./dist/main.js ./dist/styles.css`, { stdio: 'inherit' });\""
+  },
+  "copyFiles": [
+    {
+      "from": "styles.css",
+      "to": "dist/styles.css"
+    },
+    {
+      "from": "manifest.json",
+      "to": "dist/manifest.json"
+    },
+    {
+      "from": "main.js",
+      "to": "dist/main.js"
+    }
+  ],
+  "copyFilesSettings": {
+    "whenFileExists": "overwrite"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^16.11.6",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@typescript-eslint/eslint-plugin": "5.29.0",
+    "@typescript-eslint/parser": "5.29.0",
+    "autoprefixer": "^10.4.20",
+    "builtin-modules": "3.3.0",
+    "copy-files-from-to": "^3.11.0",
+    "esbuild": "0.17.3",
+    "esbuild-plugin-postcss2": "^0.1.2",
+    "obsidian": "latest",
+    "obsidian-dataview": "^0.5.67",
+    "parallelshell": "3.0.1",
+    "postcss": "^8.4.47",
+    "postcss-cli": "^11.0.0",
+    "postcss-prefix-selector": "^2.1.0",
+    "prettier": "^3.3.3",
+    "prettier-plugin-tailwindcss": "^0.6.6",
+    "tailwindcss": "^3.4.10",
+    "tslib": "2.4.0",
+    "typescript": "4.7.4"
+  },
+  "dependencies": {
+    "comlink": "^4.4.1",
+    "lucide-react": "^0.439.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  }
 }

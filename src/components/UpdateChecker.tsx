@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { getCurrentVersion, getLatestVersion, isNewerVersion } from '../utils/versions';
 import React from 'react';
-import { ArrowRight, CircleArrowUp } from 'lucide-react';
+import { CircleArrowUp } from 'lucide-react';
 import { useApp } from '../hooks/useApp';
 import { ChangelogModal } from '../settings/ChangelogModal';
 
@@ -24,7 +24,7 @@ export const UpdateChecker = () => {
 
   if (!latestVersion || !isNewerVersion(currentVersion, latestVersion)) {
     return (
-      <div className="absolute flex w-full flex-row text-base-60 hover:cursor-pointer hover:underline">
+      <div className="absolute flex w-full flex-row text-base-50 hover:cursor-pointer hover:underline">
         <div
           className="mt-[-10px] flex flex-row items-center gap-xs"
           aria-label="View changelog"
@@ -44,8 +44,6 @@ export const UpdateChecker = () => {
         onClick={openChangelog}
       >
         <span className="text-[10px]">v{currentVersion} </span>
-        <ArrowRight size={12} />
-        <span className="text-[10px]"> v{latestVersion}</span>
         <CircleArrowUp size={16} />
       </div>
     </div>

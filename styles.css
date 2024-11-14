@@ -592,10 +592,6 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
   margin-bottom: .345em;
 }
 
-.moc-link-helper .mr-\[16px\] {
-  margin-right: 16px;
-}
-
 .moc-link-helper .mt-\[-10px\] {
   margin-top: -10px;
 }
@@ -813,7 +809,7 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 }
 
 .moc-link-helper .border-text-accent {
-  border-color: var(--color-accent-1);
+  border-color: var(--link-color);
 }
 
 .moc-link-helper .border-opacity-100 {
@@ -909,6 +905,10 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
   color: var(--color-base-40);
 }
 
+.moc-link-helper .text-base-50 {
+  color: var(--color-base-50);
+}
+
 .moc-link-helper .text-base-60 {
   color: var(--color-base-60);
 }
@@ -926,7 +926,7 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 }
 
 .moc-link-helper .text-text-accent {
-  color: var(--color-accent-1);
+  color: var(--link-color);
 }
 
 .moc-link-helper .text-text-normal {
@@ -964,7 +964,7 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 }
 
 .moc-link-helper .hover\:text-text-accent:hover {
-  color: var(--color-accent-1);
+  color: var(--link-color);
 }
 
 .moc-link-helper .hover\:underline:hover {

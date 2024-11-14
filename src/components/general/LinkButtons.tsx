@@ -36,6 +36,7 @@ const LinkButtons = (props: ILinkButtonsProps) => {
     () =>
       props.pages.filter(
         (p) =>
+          (props.ignoreMoc ? !p.isMoc : true) &&
           p.upFiles.length > 0 && p.upFiles.some((f) => f.file.path === props.parentPage.file.path),
       ),
     [props.pages],
