@@ -1,4 +1,4 @@
-import { Bird, Check, Link, TriangleAlert, Unlink } from 'lucide-react';
+import { Bird, Check, Eye, EyeOff, Link, Unlink } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { DvPage } from 'src/utils/fileUtils';
 import Button from './Button';
@@ -12,8 +12,10 @@ interface ILinkButtonsProps {
   removeUpLinkFromNotes: (notes: DvPage[]) => void;
 
   ignoreMoc?: boolean;
-
   preserveBg?: boolean;
+  canFilterOnlyUnlinked?: boolean;
+  seeOnlyUnlinked?: boolean;
+  setSeeOnlyUnlinked?: (value: boolean) => void;
 }
 
 const LinkButtons = (props: ILinkButtonsProps) => {
@@ -37,13 +39,15 @@ const LinkButtons = (props: ILinkButtonsProps) => {
       props.pages.filter(
         (p) =>
           (props.ignoreMoc ? !p.isMoc : true) &&
-          p.upFiles.length > 0 && p.upFiles.some((f) => f.file.path === props.parentPage.file.path),
+          p.upFiles.length > 0 &&
+          p.upFiles.some((f) => f.file.path === props.parentPage.file.path),
       ),
     [props.pages],
   );
 
   const onLinkAll = () => {
     setDisabled(true);
+    props.setSeeOnlyUnlinked?.(false);
     props.addUpLinkToNotes(notLinkedPages);
   };
 
@@ -65,7 +69,14 @@ const LinkButtons = (props: ILinkButtonsProps) => {
           </div>
         ) : notLinkedPages.length > 0 ? (
           <div className={`flex w-full flex-row items-center gap-s text-orange`}>
-            <TriangleAlert size={16} />
+            {props.canFilterOnlyUnlinked && (
+              <Button
+                onClick={() => props.setSeeOnlyUnlinked?.(!props.seeOnlyUnlinked)}
+                icon={props.seeOnlyUnlinked ? <EyeOff size={16} /> : <Eye size={16} />}
+                ariaLabel="See only unlinked"
+                className="h-[24px] w-[24px] bg-base-0 p-s"
+              />
+            )}
             <div className="text-sm">{notLinkedPages.length} notes not linked.</div>
           </div>
         ) : (

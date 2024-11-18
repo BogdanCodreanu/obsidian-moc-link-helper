@@ -65,7 +65,7 @@ const FileItem = (props: IFileItemProps) => {
             ariaLabel="Scroll to line"
             onClick={() => props.moveCursorToFile?.(props.page)}
             icon={<Search size={16} />}
-            className="h-[24px] w-[24px] p-s"
+            className="h-[24px] w-[24px] p-s border-1 border-base-60"
           />
         </div>
       )}

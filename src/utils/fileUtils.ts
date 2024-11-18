@@ -86,16 +86,16 @@ export const expandPage = (
   }
 
   if (isActiveParentFile) {
-    const nrOfOccurances: { [key: string]: number } = {};
+    const nrOfOutOccurances: { [key: string]: number } = {};
     page.file.outlinks.forEach((out: DvLink) => {
-      if (!nrOfOccurances[out.path]) {
-        nrOfOccurances[out.path] = 0;
+      if (!nrOfOutOccurances[out.path]) {
+        nrOfOutOccurances[out.path] = 0;
       }
-      nrOfOccurances[out.path]++;
+      nrOfOutOccurances[out.path]++;
     });
 
-    Object.keys(nrOfOccurances).forEach((key) => {
-      if (nrOfOccurances[key] === 1) {
+    Object.keys(nrOfOutOccurances).forEach((key) => {
+      if (nrOfOutOccurances[key] === 1) {
         const isUpLink = page.upFiles.some((up) => up.file.path === key);
         if (isUpLink) {
           // remove from outPages
@@ -103,6 +103,27 @@ export const expandPage = (
         }
       }
     });
+
+    // page.file.inlinks.forEach((inl: DvLink) => {
+    //   const nrOfOutOccurancesTowardsPage = page.file.outlinks.filter((out) => out.path === inl.path).length;
+    //   if (nrOfOutOccurancesTowardsPage === 1) {
+
+    //   }
+    // });
+
+    // Object.keys(nrOfInOccurances).forEach((key) => {
+    //   if (nrOfInOccurances[key] === 1) {
+    //     const inPage = page.inPages.find((p) => p.file.path === key);
+    //     if (inPage) {
+    //       const inPageHasUpLink = inPage.upFiles.some((up) => up.file.path === page.file.path);
+
+    //     }
+    //     if (isUpLink) {
+    //       // remove from inPages
+    //       page.inPages = page.inPages.filter((p) => p.file.path !== key);
+    //     }
+    //   }
+    // });
   }
   return page;
 };
