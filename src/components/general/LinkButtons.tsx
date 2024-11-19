@@ -74,7 +74,7 @@ const LinkButtons = (props: ILinkButtonsProps) => {
                 onClick={() => props.setSeeOnlyUnlinked?.(!props.seeOnlyUnlinked)}
                 icon={props.seeOnlyUnlinked ? <EyeOff size={16} /> : <Eye size={16} />}
                 ariaLabel="See only unlinked"
-                className="h-[24px] w-[24px] bg-base-0 p-s"
+                className="h-[24px] w-[24px] bg-base-0 p-s !border-none"
               />
             )}
             <div className="text-sm">{notLinkedPages.length} notes not linked.</div>
@@ -94,14 +94,14 @@ const LinkButtons = (props: ILinkButtonsProps) => {
           icon={<Link size={16} />}
           label={props.useSelectedFiles ? 'Link selected files' : 'Link all'}
           isDisabled={notLinkedPages.length === 0 || disabled}
-          className="w-full bg-base-0 text-green"
+          className="w-full bg-base-0 text-green !border-none"
         />
         <Button
           onClick={onUnlinkAll}
           icon={<Unlink size={16} />}
           label={props.useSelectedFiles ? 'Unlink selected files' : 'Unlink all'}
           isDisabled={linkedPages.length === 0 || disabled}
-          className="w-full bg-base-0 text-orange"
+          className="w-full bg-base-0 text-orange !border-none"
         />
       </div>
     </div>

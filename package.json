@@ -1,6 +1,6 @@
 {
   "name": "moc-link-helper",
-  "version": "1.1.10",
+  "version": "1.1.11",
   "licenses": [
     {
       "type": "MIT",
@@ -13,11 +13,11 @@
   "scripts": {
     "dev": "node esbuild.config.mjs",
     "dev-all": "parallelshell \"npm run tailwind-watch\" \"npm run postcss-watch\" \"npm run dev\"",
-    "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production && copy-files-from-to",
     "postcss-watch": "postcss ./src/styles-tailwind.css -o ./styles.css --watch --verbose",
     "tailwind-watch": "tailwindcss -i ./src/input.css -o ./src/styles-tailwind.css --watch",
     "version": "node version-bump.mjs && git add manifest.json versions.json",
     "sync-version": "node -e \"let manifest = require('./manifest.json'); let pkg = require('./package.json'); pkg.version = manifest.version; require('fs').writeFileSync('./package.json', JSON.stringify(pkg, null, 2));\" && npm install",
+    "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production && copy-files-from-to",
     "create-release": "node -e \"let manifest = require('./manifest.json'); let version = manifest.version; require('child_process').execSync(`gh release create -F releaseNotes.md -t ${version} ${version} ./dist/manifest.json ./dist/main.js ./dist/styles.css`, { stdio: 'inherit' });\""
   },
   "copyFiles": [

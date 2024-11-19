@@ -792,6 +792,14 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
   border-style: dotted;
 }
 
+.moc-link-helper .\!border-none {
+  border-style: none !important;
+}
+
+.moc-link-helper .border-base-40 {
+  border-color: var(--color-base-40);
+}
+
 .moc-link-helper .border-base-50 {
   border-color: var(--color-base-50);
 }

@@ -31,13 +31,10 @@ const ListOfItems = (props: IListOfItemsProps) => {
           key={page?.file.path ?? index}
           page={page}
           parentPage={props.parentPage}
-          titleOnly={props.type === 'TITLE_ONLY'}
-          isSelected={props.type === 'AS_SELECTED'}
-          displayAsUnadded={props.type === 'AS_UNADDED'}
           moveCursorToFile={props.moveCursorToFile}
           addAtCursor={props.insertAtCursor}
           addUpLink={props.addUpLink}
-          asMissingParent={props.type === 'AS_MISSING_PARENT'}
+          type={props.type}
         />
       ))}
       {props.pages.length === 0 && <Description text="No notes of such type present." />}

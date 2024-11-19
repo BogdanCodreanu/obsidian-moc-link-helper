@@ -10,7 +10,7 @@ interface IButtonProps {
 const Button = (props: IButtonProps) => {
   return (
     <button
-      className={`flex items-center gap-xs p-m text-xs ${props.className}`}
+      className={`flex items-center gap-xs border border-base-40 p-m text-xs ${props.className}`}
       onClick={props.onClick}
       disabled={props.isDisabled}
       aria-label={props.ariaLabel}

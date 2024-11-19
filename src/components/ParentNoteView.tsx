@@ -47,9 +47,12 @@ export const ParentNoteView = (props: IParentNoteViewProps) => {
       return [];
     }
     return activePage.outPages.filter((p) =>
-      seeOnlyUnlinked ? !p.upFiles.some((f) => f.file.path === activePage.file.path) : true,
+      seeOnlyUnlinked
+        ? !p.upFiles.some((f) => f.file.path === activePage.file.path) &&
+          (outNotesView === 'All' ? !p.isMoc : true)
+        : true,
     );
-  }, [activePage, dataviewReady, seeOnlyUnlinked]);
+  }, [activePage, dataviewReady, seeOnlyUnlinked, outNotesView]);
 
   const childOutNotes = useMemo<DvPage[]>(() => {
     return allOutNotes.filter((p) => !p.isMoc);
