@@ -57,7 +57,11 @@ export const expandPage = (
 
   page.isMoc = page.tags ? page.tags.includes(settings.parentTag) : false;
 
-  page.upFiles = pageUpProp.map((u) => dv.page(u.path)).filter((p) => !!p) ?? [];
+  page.upFiles =
+    pageUpProp
+      .filter((u) => !!u.path && typeof u.path === 'string')
+      .map((u) => dv.page(u.path))
+      .filter((p) => !!p) ?? [];
 
   page.outPages = [...new Set(page.file.outlinks.map((l: DvLink) => l.path))]
     .map((p: string) => dv.page(p))
