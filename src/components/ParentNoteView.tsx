@@ -18,6 +18,7 @@ import { getAPI } from 'obsidian-dataview';
 import { useEffect, useMemo, useState } from 'react';
 import { getFilesFromText } from '../utils/text';
 import { useApp } from '../hooks/useApp';
+import ToggleSwitch from './general/ToggleSwitch';
 
 type SCREENS = 'INLINKS' | 'OUTLINKS';
 type OutNotesView = 'All' | 'Notes' | 'MOC';
@@ -41,6 +42,7 @@ export const ParentNoteView = (props: IParentNoteViewProps) => {
   );
   const [selectedLine, setSelectedLine] = useState<number>(-1);
   const [seeOnlyUnlinked, setSeeOnlyUnlinked] = useState(false);
+  const [selectionEnabled, setSelectionEnabled] = useState(plugin.settings.selectionEnabled);
 
   const allOutNotes = useMemo<DvPage[]>(() => {
     if (!activePage || !dataviewReady) {
@@ -88,14 +90,21 @@ export const ParentNoteView = (props: IParentNoteViewProps) => {
     setSeeOnlyUnlinked(false);
   }, [outNotesView]);
 
+
+  const onSelectionModeChange = async (enabled: boolean) => {
+    setSelectionEnabled(enabled);
+    plugin.settings.selectionEnabled = enabled;
+    await plugin.saveSettings();
+  };
+
   // UPDATE SELECTION OF NOTES BASED ON TEXT SELECTION
   useEffect(() => {
-    if (!isShown || !plugin.isViewVisible() || !dataviewReady) {
+    if (!isShown || !plugin.isViewVisible() || !dataviewReady || !selectionEnabled) {
       return;
     }
 
     const intervalId = setInterval(() => {
-      if (!isShown || !plugin.isViewVisible() || !dataviewReady) {
+      if (!isShown || !plugin.isViewVisible() || !dataviewReady || !selectionEnabled) {
         return;
       }
 
@@ -147,7 +156,7 @@ export const ParentNoteView = (props: IParentNoteViewProps) => {
       }
     }, SELECTION_UPDATE_INTERVAL);
     return () => clearInterval(intervalId);
-  }, [activePage, isShown, selectedLine, dataviewReady]);
+  }, [activePage, isShown, selectedLine, dataviewReady, selectionEnabled]);
 
   const onScreenChange = (screen: SCREENS) => {
     setScreen(screen);
@@ -320,6 +329,14 @@ export const ParentNoteView = (props: IParentNoteViewProps) => {
                   }
                 />
               )}
+
+              <ToggleSwitch
+                label={`Text selection`}
+                icon={<TextSelect size={16} />}
+                description="Enable selection of notes. This should be disabled when not used to avoid performance issues. It checks for text selection and reads all the note every 500ms."
+                isEnabled={selectionEnabled}
+                onToggle={onSelectionModeChange}
+              />
 
               <div>
                 <ToggleButtonGroup

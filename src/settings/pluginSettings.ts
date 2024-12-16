@@ -7,12 +7,14 @@ export interface PluginCustomSettings {
   upPropName: string;
   parentTag: string;
   showHelpText: boolean;
+  selectionEnabled: boolean;
 }
 
 export const DEFAULT_SETTINGS: PluginCustomSettings = {
   upPropName: 'up',
   parentTag: 'MOC',
   showHelpText: true,
+  selectionEnabled: false,
 };
 
 export class SettingsTab extends PluginSettingTab {
@@ -22,6 +24,7 @@ export class SettingsTab extends PluginSettingTab {
   ) {
     super(app, plugin);
     this.plugin = plugin;
+    this.plugin.settings.selectionEnabled = false;
   }
 
   async onSettingsUpdate(newSettings: PluginCustomSettings) {

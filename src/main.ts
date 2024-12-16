@@ -15,6 +15,7 @@ export default class FileLinksHelperPlugin extends Plugin {
 
   async onload() {
     this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+    this.settings.selectionEnabled = false;
 
     this.registerView(FILE_LINKS_HELPER_VIEW_ID, (leaf) => new LinksHelperSideView(leaf, this));
 

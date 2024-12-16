@@ -1,6 +1,6 @@
 {
   "name": "moc-link-helper",
-  "version": "1.1.11",
+  "version": "1.1.12",
   "licenses": [
     {
       "type": "MIT",
@@ -18,6 +18,7 @@
     "version": "node version-bump.mjs && git add manifest.json versions.json",
     "sync-version": "node -e \"let manifest = require('./manifest.json'); let pkg = require('./package.json'); pkg.version = manifest.version; require('fs').writeFileSync('./package.json', JSON.stringify(pkg, null, 2));\" && npm install",
     "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production && copy-files-from-to",
+    "UPDATE-RELEASENOTES!!!!": "echo 'Make sure you update releaseNotes.md'",
     "create-release": "node -e \"let manifest = require('./manifest.json'); let version = manifest.version; require('child_process').execSync(`gh release create -F releaseNotes.md -t ${version} ${version} ./dist/manifest.json ./dist/main.js ./dist/styles.css`, { stdio: 'inherit' });\""
   },
   "copyFiles": [
